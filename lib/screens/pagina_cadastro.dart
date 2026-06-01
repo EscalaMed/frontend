@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../components/barra_progresso.dart';
 import '../components/botoes_navegacao.dart';
 import '../components/etapa1.dart';
+import '../components/etapa2.dart';
 
 class PaginaCadastro extends StatefulWidget {
   const PaginaCadastro({super.key});
@@ -16,11 +17,24 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
   final int _totalEtapas = 5;
 
   void _avancarEtapa() {
-    
+    if (_etapaAtual < _totalEtapas - 1) {
+      _controladorPagina.nextPage(
+        duration: const Duration(milliseconds: 300), 
+        curve: Curves.easeInOut,
+      );
+    } else {
+    }
   }
 
   void _voltarEtapa() {
-    
+    if (_etapaAtual > 0) {
+      _controladorPagina.previousPage(
+        duration: const Duration(milliseconds: 300), 
+        curve: Curves.easeInOut,
+      );
+    } else {
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -61,9 +75,11 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
                   },
                   children: const [
                     Etapa1(),
+                    Etapa2(),
                   ],
                 ),
               ),
+              
               BotoesNavegacao(
                 aoVoltar: _voltarEtapa,
                 aoContinuar: _avancarEtapa,
