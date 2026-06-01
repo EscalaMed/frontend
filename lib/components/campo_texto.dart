@@ -5,6 +5,9 @@ class CampoTextoCustomizado extends StatefulWidget {
   final bool isPassword;
   final TextInputType keyboardType;
   final TextEditingController? controller;
+  final int maxLines;
+  final double fontSizeTexto;
+  final double fontSizeLabel;
 
   const CampoTextoCustomizado({
     super.key,
@@ -12,6 +15,9 @@ class CampoTextoCustomizado extends StatefulWidget {
     this.isPassword = false,
     this.keyboardType = TextInputType.text,
     this.controller,
+    this.maxLines = 1,
+    this.fontSizeTexto = 16.0,
+    this.fontSizeLabel = 20.0,
   });
 
   @override
@@ -33,13 +39,21 @@ class _CampoTextoCustomizadoState extends State<CampoTextoCustomizado> {
     return TextField(
       controller: widget.controller,
       obscureText: _ocultarTexto,
-      keyboardType: widget.keyboardType,
+      maxLines: widget.isPassword ? 1 : widget.maxLines,
+      style: TextStyle(
+        fontSize: widget.fontSizeTexto, 
+        color: corAzulEscuro,
+      ),
+      
       decoration: InputDecoration(
         labelText: widget.label,
-        labelStyle: TextStyle(color: corAzulEscuro),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+        labelStyle: TextStyle(
+          color: corAzulEscuro, 
+          fontWeight: FontWeight.bold,
+          fontSize: widget.fontSizeLabel,
         ),
+        floatingLabelBehavior: FloatingLabelBehavior.always, 
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: corAzulEscuro, width: 2),
@@ -57,7 +71,7 @@ class _CampoTextoCustomizadoState extends State<CampoTextoCustomizado> {
                   });
                 },
               )
-            : null, 
+            : null,
       ),
     );
   }
