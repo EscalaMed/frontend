@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../components/botao_social.dart';
+import '../components/cabecalho.dart';
+import '../components/rodape.dart';
 
 class PaginaInicial extends StatelessWidget {
   const PaginaInicial({super.key});
@@ -14,11 +15,7 @@ class PaginaInicial extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF00E1D9),
-              Color(0xFF0078D7),
-              Color(0xFF001F54),
-            ],
+            colors: [Color(0xFF00E1D9), Color(0xFF0078D7), Color(0xFF001F54)],
           ),
         ),
         child: SafeArea(
@@ -28,71 +25,32 @@ class PaginaInicial extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'EscalaM',
-                      style: TextStyle(
-                        fontSize: 64,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    
-                    Transform.translate(
-                      offset: const Offset(0, 8), 
-                      child: Image.asset(
-                        'image/logo.png',
-                        height: 90, 
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    
-                    Transform.translate(
-                      offset: const Offset(-12, 0), 
-                      child: const Text(
-                        'd',
-                        style: TextStyle(
-                          fontSize: 64,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
+                const Spacer(),
+                const CabecalhoLogo(
+                  corTexto: Colors.white,
+                  centralizado: false,
                 ),
                 const SizedBox(height: 40),
-                
-                const Text(
-                  'Um jeito simples de organizar plantões.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
+
                 const Text(
                   'Sua escala de plantão na\npalma da mão.\nOrganizamos a\ncomplexidade do hospital\npara que você foque no\nque importa: o cuidado.',
+                  textAlign: TextAlign.left,
                   style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    height: 1.2,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white, 
+                    height: 1.3,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(1, 2),
+                        blurRadius: 4.0,
+                        color: Colors.black26,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 40),
-                
-                Container(
-                  height: 1,
-                  width: double.infinity,
-                  color: Colors.white.withValues(alpha: 0.5),
-                ),
-                const SizedBox(height: 40),
-                
+                const Spacer(),
+
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -100,41 +58,14 @@ class PaginaInicial extends StatelessWidget {
                     onPressed: () {},
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Colors.white, width: 1.5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
-                    child: const Text(
-                      'Entrar',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: const Text('Entrar', style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 40),
                 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    BotaoSocial(
-                      onTap: () {},
-                      conteudo: Image.asset('image/google.png', height: 20),
-                    ), 
-                    const SizedBox(width: 16),
-                    BotaoSocial(
-                      onTap: () {},
-                      conteudo: Image.asset('image/facebook.png', height: 20),
-                    ),
-                    const SizedBox(width: 16),
-                    BotaoSocial(
-                      onTap: () {},
-                      conteudo: Image.asset('image/linkedin.png', height: 20),
-                    ),
-                  ],
-                ),
+                const RodapeSociais(corLinha: Colors.white),
               ],
             ),
           ),

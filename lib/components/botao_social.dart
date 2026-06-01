@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class BotaoSocial extends StatefulWidget {
   final Widget conteudo;
   final VoidCallback onTap;
+  final Color? corBorda;
 
   const BotaoSocial({
     super.key, 
     required this.conteudo, 
     required this.onTap,
+    this.corBorda,
   });
 
   @override
@@ -42,6 +44,11 @@ class _BotaoSocialState extends State<BotaoSocial> {
             decoration: BoxDecoration(
               color: _estaSendoPressionado ? Colors.grey[300] : Colors.white,
               borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: widget.corBorda ?? Colors.transparent,
+                width: 1,
+              ),
+              
               boxShadow: [
                 if (_estaComMousePorCima && !_estaSendoPressionado)
                   BoxShadow(
