@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../cartao.dart';
+import '../etapas_cadastro/etapa4.dart';
 
 class Etapa3 extends StatelessWidget {
   const Etapa3({super.key});
@@ -27,6 +28,12 @@ class Etapa3 extends StatelessWidget {
             titulo: 'Coordenador',
             subtitulo: 'Adicione coordenadores.',
             onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TelaCoordenador(),
+                ),
+              );
             },
           ),
           const SizedBox(height: 16),

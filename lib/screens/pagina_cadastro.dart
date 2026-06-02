@@ -40,7 +40,6 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
 
   @override
   Widget build(BuildContext context) {
-    const corAzulEscuro = Color.fromARGB(255, 9, 17, 131);
 
     return Scaffold(
       backgroundColor: Colors.white, 
@@ -52,18 +51,6 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
             children: [
               BarraProgressoEtapas(progresso: (_etapaAtual + 1) / _totalEtapas),
               const SizedBox(height: 24),
-
-              const Center(
-                child: Text(
-                  'Cadastro Institucional',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: corAzulEscuro,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
 
               Expanded(
                 child: PageView(

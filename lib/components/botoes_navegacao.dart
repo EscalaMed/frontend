@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class BotoesNavegacao extends StatelessWidget {
   final VoidCallback aoVoltar;
   final VoidCallback aoContinuar;
+  final String textoContinuar;
 
   const BotoesNavegacao({
     super.key,
     required this.aoVoltar,
     required this.aoContinuar,
+    this.textoContinuar = 'Continuar',
   });
 
   @override
@@ -38,7 +40,7 @@ class BotoesNavegacao extends StatelessWidget {
         ),
         
         const SizedBox(width: 16),
-        
+
         Expanded(
           child: SizedBox(
             height: 50,
@@ -51,15 +53,15 @@ class BotoesNavegacao extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Continuar',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    textoContinuar,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(width: 8),
-                  Icon(Icons.arrow_forward_ios, size: 18),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward_ios, size: 18),
                 ],
               ),
             ),

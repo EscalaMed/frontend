@@ -10,9 +10,20 @@ class Etapa2 extends StatelessWidget {
 
     return SingleChildScrollView(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start, 
         children: [
-          const SizedBox(height: 10),
+          const Center(
+            child: Text(
+              'Cadastro Institucional',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: corAzulEscuro,
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+          
           const CampoTextoCustomizado(label: 'Telefone', keyboardType: TextInputType.phone),
           const SizedBox(height: 16),
           
@@ -21,25 +32,33 @@ class Etapa2 extends StatelessWidget {
           
           const CampoTextoCustomizado(label: 'Descrição', maxLines: 3),
           const SizedBox(height: 16),
-          
-          const Text('Logotipo', style: TextStyle(color: corAzulEscuro, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            height: 80,
-            child: OutlinedButton(
-              onPressed: () {
-              },
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.grey, width: 1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+
+          GestureDetector(
+            onTap: () {
+            },
+            child: InputDecorator(
+              decoration: InputDecoration(
+                labelText: 'Logotipo',
+                labelStyle: const TextStyle(
+                  color: corAzulEscuro,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20.0,
+                ),
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 24.0), 
               ),
               child: const Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.upload_outlined, color: corAzulEscuro),
+                  Icon(Icons.file_upload_outlined, color: corAzulEscuro),
                   SizedBox(height: 4),
-                  Text('Upload', style: TextStyle(color: corAzulEscuro, fontWeight: FontWeight.bold)),
+                  Text(
+                    'Upload', 
+                    style: TextStyle(color: corAzulEscuro, fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
             ),

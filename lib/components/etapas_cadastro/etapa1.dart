@@ -8,8 +8,17 @@ class Etapa1 extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          const Text(
+            'Cadastro Institucional',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Color.fromARGB(255, 9, 17, 131),
+            ),
+          ),
+          const SizedBox(height: 32),
           const SizedBox(height: 10),
           const CampoTextoCustomizado(label: 'Nome da Instituição', keyboardType: TextInputType.name),
           const SizedBox(height: 16),
