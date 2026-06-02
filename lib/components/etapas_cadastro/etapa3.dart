@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../cartao.dart';
 import '../etapas_cadastro/etapa4.dart';
+import '../etapas_cadastro/etapa5.dart';
 
 class Etapa3 extends StatelessWidget {
   const Etapa3({super.key});
@@ -43,6 +44,12 @@ class Etapa3 extends StatelessWidget {
             titulo: 'Setores',
             subtitulo: 'Defina setores e atribua coordenadores.',
             onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TelaSetores(),
+                ),
+              );
             },
           ),
           const SizedBox(height: 16),
