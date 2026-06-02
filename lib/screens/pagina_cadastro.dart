@@ -3,6 +3,7 @@ import '../components/barra_progresso.dart';
 import '../components/botoes_navegacao.dart';
 import '../components/etapa1.dart';
 import '../components/etapa2.dart';
+import '../components/etapa3.dart';
 
 class PaginaCadastro extends StatefulWidget {
   const PaginaCadastro({super.key});
@@ -76,6 +77,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
                   children: const [
                     Etapa1(),
                     Etapa2(),
+                    Etapa3(),
                   ],
                 ),
               ),
