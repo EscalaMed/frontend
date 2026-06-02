@@ -8,6 +8,8 @@ class CampoTextoCustomizado extends StatefulWidget {
   final int maxLines;
   final double fontSizeTexto;
   final double fontSizeLabel;
+  final String? hintText;
+  final IconData? iconeDireita;
 
   const CampoTextoCustomizado({
     super.key,
@@ -18,6 +20,8 @@ class CampoTextoCustomizado extends StatefulWidget {
     this.maxLines = 1,
     this.fontSizeTexto = 16.0,
     this.fontSizeLabel = 20.0,
+    this.hintText,
+    this.iconeDireita,
   });
 
   @override
@@ -52,6 +56,8 @@ class _CampoTextoCustomizadoState extends State<CampoTextoCustomizado> {
           fontWeight: FontWeight.bold,
           fontSize: widget.fontSizeLabel,
         ),
+        hintText: widget.hintText,
+        hintStyle: const TextStyle(color: Colors.grey, fontWeight: FontWeight.normal),
         floatingLabelBehavior: FloatingLabelBehavior.always, 
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         focusedBorder: OutlineInputBorder(
@@ -71,7 +77,7 @@ class _CampoTextoCustomizadoState extends State<CampoTextoCustomizado> {
                   });
                 },
               )
-            : null,
+            : (widget.iconeDireita != null ? Icon(widget.iconeDireita, color: corAzulEscuro) : null),
       ),
     );
   }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../components/campo_texto.dart';
+import '../campo_texto.dart';
 
 class Etapa1 extends StatelessWidget {
   const Etapa1({super.key});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../components/cartao.dart';
+import '../cartao.dart';
 
 class Etapa3 extends StatelessWidget {
   const Etapa3({super.key});

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../components/barra_progresso.dart';
 import '../components/botoes_navegacao.dart';
-import '../components/etapa1.dart';
-import '../components/etapa2.dart';
-import '../components/etapa3.dart';
+import '../components/etapas_cadastro/etapa1.dart';
+import '../components/etapas_cadastro/etapa2.dart';
+import '../components/etapas_cadastro/etapa3.dart';
 
 class PaginaCadastro extends StatefulWidget {
   const PaginaCadastro({super.key});
