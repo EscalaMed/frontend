@@ -5,11 +5,12 @@ import '../../components/botoes_navegacao.dart';
 import '../../components/modal_selecao.dart';
 
 class TelaCoordenador extends StatefulWidget {
-  const TelaCoordenador({super.key});
+  final bool ehTelaIndependente;
+  const TelaCoordenador({super.key, this.ehTelaIndependente = false});
 
   @override
-    State<TelaCoordenador> createState() => _TelaCoordenadorState();
-  }
+  State<TelaCoordenador> createState() => _TelaCoordenadorState();
+}
 
 class _TelaCoordenadorState extends State<TelaCoordenador> {
   final TextEditingController _cargoController = TextEditingController();
@@ -28,25 +29,44 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: widget.ehTelaIndependente
+          ? AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new, color: corAzulEscuro),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: const Text(
+                'Adicionar Coordenador',
+                style: TextStyle(color: corAzulEscuro, fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+              centerTitle: true,
+            )
+          : null,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const BarraProgressoEtapas(progresso: 0.6), 
-              
-              const SizedBox(height: 32),
-
-              const Text(
-                'Adicionar Coordenador',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: corAzulEscuro),
-              ),
-              const SizedBox(height: 32),
+              if (!widget.ehTelaIndependente) ...[
+                const BarraProgressoEtapas(progresso: 0.6),
+                const SizedBox(height: 24),
+                
+                const Align(
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Adicionar Coordenador',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: corAzulEscuro),
+                  ),
+                ),
+                const SizedBox(height: 32),
+              ],
 
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const CampoTextoCustomizado(label: 'Nome Completo', keyboardType: TextInputType.name),
                       const SizedBox(height: 16),
@@ -115,13 +135,43 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
                 ),
               ),
 
-              BotoesNavegacao(
-                textoContinuar: 'Concluído',
-                aoVoltar: () => Navigator.pop(context),
-                aoContinuar: () {
-                  Navigator.pop(context);
-                },
-              ),
+              const SizedBox(height: 16),
+              if (widget.ehTelaIndependente)
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: corAzulEscuro,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Concluído',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(width: 8),
+                        Icon(Icons.arrow_forward_ios, size: 18),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                BotoesNavegacao(
+                  textoContinuar: 'Concluído',
+                  aoVoltar: () => Navigator.pop(context),
+                  aoContinuar: () {
+                    Navigator.pop(context);
+                  },
+                ),
             ],
           ),
         ),
