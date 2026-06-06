@@ -2,9 +2,23 @@ import 'package:flutter/material.dart';
 import '../../components/barra_progresso.dart';
 import '../../components/campo_texto.dart';
 import '../../components/botoes_navegacao.dart';
+import '../../components/modal_selecao.dart';
 
-class TelaSetores extends StatelessWidget {
+class TelaSetores extends StatefulWidget {
   const TelaSetores({super.key});
+
+  @override
+  State<TelaSetores> createState() => _TelaSetoresState();
+}
+
+class _TelaSetoresState extends State<TelaSetores> {
+  final TextEditingController _coordenadorController = TextEditingController();
+
+  @override
+  void dispose() {
+    _coordenadorController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,12 +49,30 @@ class TelaSetores extends StatelessWidget {
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
-                    children: const [
-                      CampoTextoCustomizado(label: 'Nome do Setor', keyboardType: TextInputType.name),
-                      SizedBox(height: 16),
-                      CampoTextoCustomizado(
-                        label: 'Coordenador', 
-                        iconeDireita: Icons.arrow_forward,
+                    children: [
+                      const CampoTextoCustomizado(label: 'Nome do Setor', keyboardType: TextInputType.name),
+                      const SizedBox(height: 16),
+                      
+                      GestureDetector(
+                        onTap: () {
+                          mostrarModalSelecao(
+                            context: context,
+                            tipo: 'Coordenador',
+                            opcoes: [],
+                            aoSelecionar: (escolha) {
+                              setState(() {
+                                _coordenadorController.text = escolha;
+                              });
+                            },
+                          );
+                        },
+                        child: AbsorbPointer(
+                          child: CampoTextoCustomizado(
+                            label: 'Coordenador',
+                            controller: _coordenadorController,
+                            iconeDireita: Icons.keyboard_arrow_down, 
+                          ),
+                        ),
                       ),
                     ],
                   ),

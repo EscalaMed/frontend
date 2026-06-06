@@ -1,11 +1,26 @@
 import 'package:flutter/material.dart';
 import '../../components/barra_progresso.dart';
 import '../../components/campo_texto.dart';
-import '../../components/dropdown.dart';
 import '../../components/botoes_navegacao.dart';
+import '../../components/modal_selecao.dart';
 
-class TelaCoordenador extends StatelessWidget {
+class TelaCoordenador extends StatefulWidget {
   const TelaCoordenador({super.key});
+
+  @override
+    State<TelaCoordenador> createState() => _TelaCoordenadorState();
+  }
+
+class _TelaCoordenadorState extends State<TelaCoordenador> {
+  final TextEditingController _cargoController = TextEditingController();
+  final TextEditingController _contratoController = TextEditingController();
+
+  @override
+  void dispose() {
+    _cargoController.dispose();
+    _contratoController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,15 +66,49 @@ class TelaCoordenador extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
 
-                      const CampoDropdownCustomizado(
-                        label: 'Cargo', 
-                        itens: ['Médico Chefe', 'Enfermeiro Chefe', 'Diretor Clínico'],
+                      GestureDetector(
+                        onTap: () {
+                          mostrarModalSelecao(
+                            context: context,
+                            tipo: 'Cargos',
+                            opcoes: [],
+                            aoSelecionar: (escolha) {
+                              setState(() {
+                                _cargoController.text = escolha;
+                              });
+                            },
+                          );
+                        },
+                        child: AbsorbPointer(
+                          child: CampoTextoCustomizado(
+                            label: 'Cargo',
+                            controller: _cargoController,
+                            iconeDireita: Icons.keyboard_arrow_down,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 16),
 
-                      const CampoDropdownCustomizado(
-                        label: 'Forma de Contratação', 
-                        itens: ['CLT', 'PJ', 'Cooperado'],
+                      GestureDetector(
+                        onTap: () {
+                          mostrarModalSelecao(
+                            context: context,
+                            tipo: 'Contratação',
+                            opcoes: [],
+                            aoSelecionar: (escolha) {
+                              setState(() {
+                                _contratoController.text = escolha;
+                              });
+                            },
+                          );
+                        },
+                        child: AbsorbPointer(
+                          child: CampoTextoCustomizado(
+                            label: 'Forma de Contratação',
+                            controller: _contratoController,
+                            iconeDireita: Icons.keyboard_arrow_down,
+                          ),
+                        ),
                       ),
                     ],
                   ),
