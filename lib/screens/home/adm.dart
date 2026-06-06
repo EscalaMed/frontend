@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../components/card_destaque.dart';
 import '../../components/card_grid_menu.dart';
-import '../pagina_cadastro_funcionarios.dart';
+import 'grid/pagina_cadastro_funcionarios.dart';
+import 'grid/pagina_relatorios.dart';
 
 class HomeAdmin extends StatelessWidget {
   const HomeAdmin({super.key});
@@ -90,7 +91,14 @@ class HomeAdmin extends StatelessWidget {
                     CardGridMenu(
                       icone: Icons.bar_chart_outlined,
                       titulo: 'Relatórios\nEstatísticos',
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const TelaRelatorios(),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

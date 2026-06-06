@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../components/campo_texto.dart';
-import '../components/botoes_navegacao.dart';
-import '../components/modal_selecao.dart';
+import '../../../components/campo_texto.dart';
+import '../../../components/botoes_navegacao.dart';
+import '../../../components/modal_selecao.dart';
 
 class PaginaCadastroFuncionarios extends StatefulWidget {
   const PaginaCadastroFuncionarios({super.key});
