@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../components/card_destaque.dart';
+import '../../components/card_grid_menu.dart';
 
 class HomeAdmin extends StatelessWidget {
   const HomeAdmin({super.key});
@@ -63,6 +64,26 @@ class HomeAdmin extends StatelessWidget {
                   crossAxisSpacing: 16,
                   childAspectRatio: 1.1,
                   children: [
+                    CardGridMenu(
+                      icone: Icons.local_hospital_outlined,
+                      titulo: 'Gerenciar\nHospital',
+                      onTap: () {},
+                    ),
+                    CardGridMenu(
+                      icone: Icons.person_add_alt_1_outlined,
+                      titulo: 'Adicionar\nFuncionários',
+                      onTap: () {},
+                    ),
+                    CardGridMenu(
+                      icone: Icons.calendar_month_outlined,
+                      titulo: 'Escalas e\nTurnos',
+                      onTap: () {},
+                    ),
+                    CardGridMenu(
+                      icone: Icons.bar_chart_outlined,
+                      titulo: 'Relatórios\nEstatísticos',
+                      onTap: () {},
+                    ),
                   ],
                 ),
               ),
