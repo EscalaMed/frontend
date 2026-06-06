@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../components/card_resumo.dart';
+import '../../../components/grafico.dart';
 
 class TelaRelatorios extends StatelessWidget {
   const TelaRelatorios({super.key});
@@ -80,6 +81,14 @@ class TelaRelatorios extends StatelessWidget {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: corAzulEscuro),
                   ),
                   const SizedBox(height: 24),
+
+                  const Grafico(label: 'Clínica Médica', porcentagem: 0.0, valorTexto: '0%', cor: corAzulVibrante),
+                  const SizedBox(height: 16),
+                  const Grafico(label: 'Pediatria', porcentagem: 0.0, valorTexto: '0%', cor: Colors.orange),
+                  const SizedBox(height: 16),
+                  const Grafico(label: 'Cirurgia Geral', porcentagem: 0.0, valorTexto: '0%', cor: Colors.redAccent),
+                  const SizedBox(height: 16),
+                  const Grafico(label: 'Ortopedia', porcentagem: 0.0, valorTexto: '0%', cor: Colors.purple),
                 ],
               ),
             ),
