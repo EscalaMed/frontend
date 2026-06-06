@@ -4,25 +4,30 @@ import '../etapas_cadastro/etapa4.dart';
 import '../etapas_cadastro/etapa5.dart';
 
 class Etapa3 extends StatelessWidget {
-  const Etapa3({super.key});
+  final bool ehTelaIndependente;
+  const Etapa3({super.key, this.ehTelaIndependente = false});
 
   @override
   Widget build(BuildContext context) {
     const corAzulEscuro = Color.fromARGB(255, 9, 17, 131);
+    const corFundoApp = Color(0xFFF4F6FA);
 
-    return SingleChildScrollView(
+    Widget conteudoVisual = SingleChildScrollView(
+      padding: EdgeInsets.only(top: ehTelaIndependente ? 30.0 : 0.0), 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center, 
         children: [
-          const Text(
-            'Gerenciar Hospital',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: corAzulEscuro,
+          if (!ehTelaIndependente) ...[
+            const Text(
+              'Gerenciar Hospital',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: corAzulEscuro,
+              ),
             ),
-          ),
-          const SizedBox(height: 32),
+            const SizedBox(height: 32),
+          ],
 
           CartaoOpcao(
             icone: Icons.people_outline,
@@ -74,5 +79,31 @@ class Etapa3 extends StatelessWidget {
         ],
       ),
     );
+
+    if (ehTelaIndependente) {
+      return Scaffold(
+        backgroundColor: corFundoApp,
+        appBar: AppBar(
+          backgroundColor: corFundoApp,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: corAzulEscuro),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            'Gerenciar Hospital',
+            style: TextStyle(color: corAzulEscuro, fontWeight: FontWeight.bold),
+          ),
+          centerTitle: true,
+        ),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: conteudoVisual,
+          ),
+        ),
+      );
+    }
+    return conteudoVisual;
   }
 }

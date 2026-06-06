@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../components/card_destaque.dart';
 import '../../components/card_grid_menu.dart';
+import '../../components/etapas_cadastro/etapa3.dart';
 import 'grid/pagina_cadastro_funcionarios.dart';
 import 'grid/pagina_relatorios.dart';
 
@@ -69,7 +70,14 @@ class HomeAdmin extends StatelessWidget {
                     CardGridMenu(
                       icone: Icons.local_hospital_outlined,
                       titulo: 'Gerenciar\nHospital',
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const Etapa3(ehTelaIndependente: true), 
+                          ),
+                        );
+                      },
                     ),
                     CardGridMenu(
                       icone: Icons.person_add_alt_1_outlined,
