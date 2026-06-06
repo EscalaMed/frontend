@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../components/card_resumo.dart';
 import '../../../components/grafico.dart';
+import '../../../components/lista_de_contrato.dart';
 
 class TelaRelatorios extends StatelessWidget {
   const TelaRelatorios({super.key});
@@ -106,7 +107,11 @@ class TelaRelatorios extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  
+                  const ItemListaContrato(titulo: 'CLT', subtitulo: '0 funcionários', icone: Icons.badge_outlined),
+                  const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                  const ItemListaContrato(titulo: 'PJ', subtitulo: '0 funcionários', icone: Icons.business_center_outlined),
+                  const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                  const ItemListaContrato(titulo: 'Cooperado', subtitulo: '0 funcionários', icone: Icons.handshake_outlined),
                 ],
               ),
             ),
