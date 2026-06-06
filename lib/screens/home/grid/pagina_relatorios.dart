@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../components/card_resumo.dart';
 
 class TelaRelatorios extends StatelessWidget {
   const TelaRelatorios({super.key});
@@ -7,6 +8,7 @@ class TelaRelatorios extends StatelessWidget {
   Widget build(BuildContext context) {
     const corAzulEscuro = Color.fromARGB(255, 9, 17, 131);
     const corFundoApp = Color(0xFFF4F6FA);
+    const corAzulVibrante = Color(0xFF3948F5);
 
     return Scaffold(
       backgroundColor: corFundoApp,
@@ -36,6 +38,23 @@ class TelaRelatorios extends StatelessWidget {
 
             Row(
               children: [
+                const Expanded(
+                  child: CardResumo(
+                    titulo: 'Total de\nFuncionários',
+                    valor: '0',
+                    icone: Icons.people_alt_outlined,
+                    cor: corAzulVibrante,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: CardResumo(
+                    titulo: 'Plantões\nRealizados',
+                    valor: '0',
+                    icone: Icons.check_circle_outline,
+                    cor: Colors.teal,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 32),
