@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../components/card_resumo.dart';
 import '../../../components/grafico.dart';
 import '../../../components/lista_de_contrato.dart';
+import 'relatorios/tela_detalhes_alertas.dart';
+import 'relatorios/tela_detalhes_contratacao.dart';
 
 class TelaRelatorios extends StatelessWidget {
   const TelaRelatorios({super.key});
@@ -171,14 +173,16 @@ class TelaRelatorios extends StatelessWidget {
                     subtitulo: 'Faltam 0 médicos para o plantão noturno', 
                     icone: Icons.error_outline,
                     onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const TelaDetalhesAlertas()));
                     },
                   ),
-                  Divider(height: 1, color: Color(0xFFEEEEEE)),
+                  const Divider(height: 1, color: Color(0xFFEEEEEE)),
                   ItemListaContrato(
                     titulo: 'Limite de Horas',
                     subtitulo: '0 funcionários próximos do limite semanal',
                     icone: Icons.timer_outlined,
                     onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const TelaDetalhesAlertas()));
                     },
                   ),
                 ],
@@ -203,22 +207,25 @@ class TelaRelatorios extends StatelessWidget {
                     subtitulo: '0 funcionários',
                     icone: Icons.badge_outlined,
                     onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const TelaDetalhesContratacao(tipoContrato: 'CLT')));
                     },
                   ),
-                  Divider(height: 1, color: Color(0xFFEEEEEE)),
+                  const Divider(height: 1, color: Color(0xFFEEEEEE)),
                   ItemListaContrato(
                     titulo: 'PJ',
                     subtitulo: '0 funcionários',
                     icone: Icons.business_center_outlined,
                     onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const TelaDetalhesContratacao(tipoContrato: 'PJ')));
                     },
                   ),
-                  Divider(height: 1, color: Color(0xFFEEEEEE)),
+                  const Divider(height: 1, color: Color(0xFFEEEEEE)),
                   ItemListaContrato(
                     titulo: 'Cooperado',
                     subtitulo: '0 funcionários',
                     icone: Icons.handshake_outlined,
                     onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const TelaDetalhesContratacao(tipoContrato: 'Cooperado')));
                     },
                   ),
                 ],
