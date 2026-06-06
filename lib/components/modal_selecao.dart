@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../screens/home/grid/pagina_adicionar_opcao.dart';
 
 void mostrarModalSelecao({
   required BuildContext context,
@@ -53,6 +54,13 @@ void mostrarModalSelecao({
                 ),
                 TextButton.icon(
                   onPressed: () {
+                    Navigator.pop(context); 
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TelaAdicionarOpcao(tipo: tipo),
+                      ),
+                    );
                   },
                   icon: const Icon(Icons.add_circle_outline, color: Colors.white),
                   label: Text('Adicionar $tipo', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
