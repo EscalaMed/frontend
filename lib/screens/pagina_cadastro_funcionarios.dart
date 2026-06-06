@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../components/campo_texto.dart';
 import '../components/botoes_navegacao.dart';
+import '../components/modal_selecao.dart';
 
 class PaginaCadastroFuncionarios extends StatefulWidget {
   const PaginaCadastroFuncionarios({super.key});
@@ -66,7 +67,16 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
 
                       GestureDetector(
                         onTap: () {
-                          
+                          mostrarModalSelecao(
+                            context: context,
+                            tipo: 'Cargos',
+                            opcoes: [],
+                            aoSelecionar: (escolha) {
+                              setState(() {
+                                _cargoController.text = escolha;
+                              });
+                            },
+                          );
                         },
                         child: AbsorbPointer(
                           child: CampoTextoCustomizado(
@@ -80,7 +90,16 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
 
                       GestureDetector(
                         onTap: () {
-                          
+                          mostrarModalSelecao(
+                            context: context,
+                            tipo: 'Setores',
+                            opcoes: [],
+                            aoSelecionar: (escolha) {
+                              setState(() {
+                                _setorController.text = escolha;
+                              });
+                            },
+                          );
                         },
                         child: AbsorbPointer(
                           child: CampoTextoCustomizado(
@@ -94,6 +113,12 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
 
                       GestureDetector(
                         onTap: () {
+                          mostrarModalSelecao(
+                            context: context,
+                            tipo: 'Contratação',
+                            opcoes: [],
+                            aoSelecionar: (escolha) => setState(() => _contratoController.text = escolha),
+                          );
                         },
                         child: AbsorbPointer(
                           child: CampoTextoCustomizado(
@@ -107,6 +132,12 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
 
                       GestureDetector(
                         onTap: () {
+                          mostrarModalSelecao(
+                            context: context,
+                            tipo: 'Carga Horária',
+                            opcoes: [],
+                            aoSelecionar: (escolha) => setState(() => _cargaController.text = escolha),
+                          );
                         },
                         child: AbsorbPointer(
                           child: CampoTextoCustomizado(
