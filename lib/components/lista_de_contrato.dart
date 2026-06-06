@@ -4,12 +4,14 @@ class ItemListaContrato extends StatelessWidget {
   final String titulo;
   final String subtitulo;
   final IconData icone;
+  final VoidCallback onTap;
 
   const ItemListaContrato({
     super.key,
     required this.titulo,
     required this.subtitulo,
     required this.icone,
+    required this.onTap,
   });
 
   @override
@@ -17,6 +19,7 @@ class ItemListaContrato extends StatelessWidget {
     const corAzulEscuro = Color.fromARGB(255, 9, 17, 131);
 
     return ListTile(
+      onTap: onTap,
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(

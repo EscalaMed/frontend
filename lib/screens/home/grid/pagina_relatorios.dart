@@ -39,8 +39,8 @@ class TelaRelatorios extends StatelessWidget {
             const SizedBox(height: 16),
 
             Row(
-              children: [
-                const Expanded(
+              children: const [
+                Expanded(
                   child: CardResumo(
                     titulo: 'Total de\nFuncionários',
                     valor: '0',
@@ -48,13 +48,41 @@ class TelaRelatorios extends StatelessWidget {
                     cor: corAzulVibrante,
                   ),
                 ),
-                const SizedBox(width: 16),
-                const Expanded(
+                SizedBox(width: 16),
+                Expanded(
                   child: CardResumo(
                     titulo: 'Plantões\nRealizados',
                     valor: '0',
                     icone: Icons.check_circle_outline,
                     cor: Colors.teal,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            const Text(
+              'Frequência e Assiduidade',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: corAzulEscuro),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: const [
+                Expanded(
+                  child: CardResumo(
+                    titulo: 'Faltas e\nAtestados',
+                    valor: '0',
+                    icone: Icons.warning_amber_rounded,
+                    cor: Colors.redAccent,
+                  ),
+                ),
+                SizedBox(width: 16),
+                Expanded(
+                  child: CardResumo(
+                    titulo: 'Trocas de\nPlantão',
+                    valor: '0',
+                    icone: Icons.swap_horiz_rounded,
+                    cor: Colors.orange,
                   ),
                 ),
               ],
@@ -76,20 +104,83 @@ class TelaRelatorios extends StatelessWidget {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
+                children: const [
+                  Text(
+                    'Horas Extras por Setor',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: corAzulEscuro),
+                  ),
+                  SizedBox(height: 24),
+
+                  Grafico(label: 'Enfermagem', porcentagem: 0.0, valorTexto: '0h', cor: Colors.redAccent),
+                  SizedBox(height: 16),
+                  Grafico(label: 'Recepção', porcentagem: 0.0, valorTexto: '0h', cor: Colors.orange),
+                  SizedBox(height: 16),
+                  Grafico(label: 'Clínica Médica', porcentagem: 0.0, valorTexto: '0h', cor: corAzulVibrante),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
                     'Ocupação por Setor',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: corAzulEscuro),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
+                  
+                  Grafico(label: 'Clínica Médica', porcentagem: 0.0, valorTexto: '0%', cor: corAzulVibrante),
+                  SizedBox(height: 16),
+                  Grafico(label: 'Pediatria', porcentagem: 0.0, valorTexto: '0%', cor: Colors.orange),
+                  SizedBox(height: 16),
+                  Grafico(label: 'Cirurgia Geral', porcentagem: 0.0, valorTexto: '0%', cor: Colors.teal),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
 
-                  const Grafico(label: 'Clínica Médica', porcentagem: 0.0, valorTexto: '0%', cor: corAzulVibrante),
-                  const SizedBox(height: 16),
-                  const Grafico(label: 'Pediatria', porcentagem: 0.0, valorTexto: '0%', cor: Colors.orange),
-                  const SizedBox(height: 16),
-                  const Grafico(label: 'Cirurgia Geral', porcentagem: 0.0, valorTexto: '0%', cor: Colors.redAccent),
-                  const SizedBox(height: 16),
-                  const Grafico(label: 'Ortopedia', porcentagem: 0.0, valorTexto: '0%', cor: Colors.purple),
+            const Text(
+              'Alertas do Sistema',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: corAzulEscuro),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                children: [
+                  ItemListaContrato(
+                    titulo: 'Déficit na Pediatria', 
+                    subtitulo: 'Faltam 0 médicos para o plantão noturno', 
+                    icone: Icons.error_outline,
+                    onTap: () {
+                    },
+                  ),
+                  Divider(height: 1, color: Color(0xFFEEEEEE)),
+                  ItemListaContrato(
+                    titulo: 'Limite de Horas',
+                    subtitulo: '0 funcionários próximos do limite semanal',
+                    icone: Icons.timer_outlined,
+                    onTap: () {
+                    },
+                  ),
                 ],
               ),
             ),
@@ -107,15 +198,33 @@ class TelaRelatorios extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const ItemListaContrato(titulo: 'CLT', subtitulo: '0 funcionários', icone: Icons.badge_outlined),
-                  const Divider(height: 1, color: Color(0xFFEEEEEE)),
-                  const ItemListaContrato(titulo: 'PJ', subtitulo: '0 funcionários', icone: Icons.business_center_outlined),
-                  const Divider(height: 1, color: Color(0xFFEEEEEE)),
-                  const ItemListaContrato(titulo: 'Cooperado', subtitulo: '0 funcionários', icone: Icons.handshake_outlined),
+                  ItemListaContrato(
+                    titulo: 'CLT',
+                    subtitulo: '0 funcionários',
+                    icone: Icons.badge_outlined,
+                    onTap: () {
+                    },
+                  ),
+                  Divider(height: 1, color: Color(0xFFEEEEEE)),
+                  ItemListaContrato(
+                    titulo: 'PJ',
+                    subtitulo: '0 funcionários',
+                    icone: Icons.business_center_outlined,
+                    onTap: () {
+                    },
+                  ),
+                  Divider(height: 1, color: Color(0xFFEEEEEE)),
+                  ItemListaContrato(
+                    titulo: 'Cooperado',
+                    subtitulo: '0 funcionários',
+                    icone: Icons.handshake_outlined,
+                    onTap: () {
+                    },
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 40),
           ],
         ),
       ),
