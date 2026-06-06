@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../components/card_destaque.dart';
 
 class HomeAdmin extends StatelessWidget {
   const HomeAdmin({super.key});
@@ -43,7 +44,9 @@ class HomeAdmin extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 24),
-              
+
+              const CardDestaque(),
+
               const SizedBox(height: 32),
 
               const Text(
