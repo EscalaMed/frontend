@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../components/card_destaque.dart';
 import '../../components/card_grid_menu.dart';
+import '../pagina_cadastro_funcionarios.dart';
 
 class HomeAdmin extends StatelessWidget {
   const HomeAdmin({super.key});
@@ -72,7 +73,14 @@ class HomeAdmin extends StatelessWidget {
                     CardGridMenu(
                       icone: Icons.person_add_alt_1_outlined,
                       titulo: 'Adicionar\nFuncionários',
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PaginaCadastroFuncionarios(),
+                          ),
+                        );
+                      },
                     ),
                     CardGridMenu(
                       icone: Icons.calendar_month_outlined,
