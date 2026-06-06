@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../components/campo_texto.dart';
-import '../../../components/botoes_navegacao.dart';
 import '../../../components/modal_selecao.dart';
 
 class PaginaCadastroFuncionarios extends StatefulWidget {
@@ -20,6 +19,8 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
   void dispose() {
     _cargoController.dispose();
     _setorController.dispose();
+    _contratoController.dispose();
+    _cargaController.dispose();
     super.dispose();
   }
 
@@ -29,20 +30,25 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: corAzulEscuro),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Adicionar Funcionários',
+          style: TextStyle(color: corAzulEscuro, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+          padding: const EdgeInsets.fromLTRB(32.0, 38.0, 32.0, 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Center(
-                child: Text(
-                  'Adicionar Funcionários',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: corAzulEscuro),
-                ),
-              ),
-              const SizedBox(height: 32),
-
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
@@ -152,14 +158,36 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
                 ),
               ),
 
-              BotoesNavegacao(
-                textoContinuar: 'Concluído',
-                aoVoltar: () => Navigator.pop(context),
-                aoContinuar: () {
-                },
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: corAzulEscuro,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Concluído',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward_ios, size: 18),
+                    ],
+                  ),
+                ),
               ),
               
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
             ],
           ),
         ),
