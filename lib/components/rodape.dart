@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'botao_social.dart';
+import '../screens/pagina_cadastro.dart';
 
 class RodapeSociais extends StatelessWidget {
   final Color corLinha;
@@ -22,6 +23,12 @@ class RodapeSociais extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: GestureDetector(
                 onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PaginaCadastro(),
+                    ),
+                  );
                 },
                 child: Text(
                   'Ou cadastra-se',
