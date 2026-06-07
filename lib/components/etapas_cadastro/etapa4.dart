@@ -19,15 +19,20 @@ class TelaCoordenador extends StatefulWidget {
 class _TelaCoordenadorState extends State<TelaCoordenador> {
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _cpfController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _telefoneController = TextEditingController();
   final TextEditingController _registroController = TextEditingController();
   final TextEditingController _cargoController = TextEditingController();
   final TextEditingController _contratoController = TextEditingController();
 
+  List<String> _listaCargos = ['Coordenador de Enfermagem', 'Coordenador Médico', 'Diretor Clínico'];
+  List<String> _listaContratos = ['CLT', 'PJ', 'Prestador de Serviço'];
+
   @override
   void dispose() {
     _nomeController.dispose();
     _cpfController.dispose();
+    _emailController.dispose();
     _telefoneController.dispose();
     _registroController.dispose();
     _cargoController.dispose();
@@ -38,16 +43,14 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
   void _concluirEVoltar() {
     if (_nomeController.text.trim().isEmpty ||
         _cpfController.text.trim().isEmpty ||
+        _emailController.text.trim().isEmpty ||
         _telefoneController.text.trim().isEmpty ||
         _registroController.text.trim().isEmpty ||
         _cargoController.text.trim().isEmpty ||
         _contratoController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Preencha todos os campos do coordenador!',
-            textAlign: TextAlign.center,
-          ),
+          content: Text('Preencha todos os campos do coordenador!', textAlign: TextAlign.center),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -57,6 +60,7 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
     final dados = {
       'nome': _nomeController.text.trim(),
       'cpf': _cpfController.text.trim(),
+      'email': _emailController.text.trim(),
       'telefone': _telefoneController.text.trim(),
       'registro': _registroController.text.trim(),
       'cargo': _cargoController.text.trim(),
@@ -76,12 +80,12 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color.fromARGB(255, 9, 17, 131)),
+          icon: const Icon(Icons.arrow_back_ios_new, color: corAzulEscuro),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Adicionar Coordenador',
-          style: TextStyle(color: Color.fromARGB(255, 9, 17, 131), fontWeight: FontWeight.bold),
+          style: TextStyle(color: corAzulEscuro, fontWeight: FontWeight.bold),
         ),
       ),
       body: SafeArea(
@@ -97,52 +101,35 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      CampoTextoCustomizado(
-                        label: 'Nome Completo',
-                        keyboardType: TextInputType.name,
-                        controller: _nomeController,
-                      ),
+                      CampoTextoCustomizado(label: 'Nome Completo', keyboardType: TextInputType.name, controller: _nomeController),
+                      const SizedBox(height: 16),
+                      CampoTextoCustomizado(label: 'E-mail do Coordenador', keyboardType: TextInputType.emailAddress, controller: _emailController),
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          Expanded(
-                            child: CampoTextoCustomizado(
-                              label: 'CPF',
-                              keyboardType: TextInputType.number,
-                              controller: _cpfController,
-                            ),
-                          ),
+                          Expanded(child: CampoTextoCustomizado(label: 'CPF', keyboardType: TextInputType.number, controller: _cpfController)),
                           const SizedBox(width: 16),
-                          Expanded(
-                            child: CampoTextoCustomizado(
-                              label: 'Telefone',
-                              keyboardType: TextInputType.phone,
-                              controller: _telefoneController,
-                            ),
-                          ),
+                          Expanded(child: CampoTextoCustomizado(label: 'Telefone', keyboardType: TextInputType.phone, controller: _telefoneController)),
                         ],
                       ),
                       const SizedBox(height: 16),
-                      CampoTextoCustomizado(
-                        label: 'Registro Profissional',
-                        hintText: 'CRM, COREN...',
-                        controller: _registroController,
-                      ),
+                      CampoTextoCustomizado(label: 'Registro Profissional', hintText: 'CRM, COREN...', controller: _registroController),
                       const SizedBox(height: 16),
                       GestureDetector(
                         onTap: () => mostrarModalSelecao(
                           context: context,
                           tipo: 'Cargos',
-                          opcoes: [],
-                          aoSelecionar: (val) =>
-                              setState(() => _cargoController.text = val),
+                          opcoes: _listaCargos,
+                          aoSelecionar: (val) => setState(() => _cargoController.text = val),
+                          aoCriarNovaOpcao: (novoCargo) {
+                            setState(() {
+                              _listaCargos.add(novoCargo);
+                              _cargoController.text = novoCargo;
+                            });
+                          },
                         ),
                         child: AbsorbPointer(
-                          child: CampoTextoCustomizado(
-                            label: 'Cargo',
-                            controller: _cargoController,
-                            iconeDireita: Icons.keyboard_arrow_down,
-                          ),
+                          child: CampoTextoCustomizado(label: 'Cargo', controller: _cargoController, iconeDireita: Icons.keyboard_arrow_down),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -150,16 +137,17 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
                         onTap: () => mostrarModalSelecao(
                           context: context,
                           tipo: 'Contratação',
-                          opcoes: [],
-                          aoSelecionar: (val) =>
-                              setState(() => _contratoController.text = val),
+                          opcoes: _listaContratos,
+                          aoSelecionar: (val) => setState(() => _contratoController.text = val),
+                          aoCriarNovaOpcao: (novoContrato) {
+                            setState(() {
+                              _listaContratos.add(novoContrato);
+                              _contratoController.text = novoContrato;
+                            });
+                          },
                         ),
                         child: AbsorbPointer(
-                          child: CampoTextoCustomizado(
-                            label: 'Forma de Contratação',
-                            controller: _contratoController,
-                            iconeDireita: Icons.keyboard_arrow_down,
-                          ),
+                          child: CampoTextoCustomizado(label: 'Forma de Contratação', controller: _contratoController, iconeDireita: Icons.keyboard_arrow_down),
                         ),
                       ),
                     ],
@@ -167,18 +155,11 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
                 ),
               ),
               SizedBox(
-                width: double.infinity,
-                height: 50,
+                width: double.infinity, height: 50,
                 child: ElevatedButton(
                   onPressed: _concluirEVoltar,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: corAzulEscuro,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text(
-                    'Concluído',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                  style: ElevatedButton.styleFrom(backgroundColor: corAzulEscuro, foregroundColor: Colors.white),
+                  child: const Text('Concluído', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],

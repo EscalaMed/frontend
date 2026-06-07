@@ -6,6 +6,7 @@ void mostrarModalSelecao({
   required String tipo,
   required List<String> opcoes,
   required Function(String) aoSelecionar,
+  required Function(String) aoCriarNovaOpcao,
 }) {
   const corAzulEscuro = Color.fromARGB(255, 9, 17, 131);
 
@@ -53,14 +54,17 @@ void mostrarModalSelecao({
                   label: const Text('Voltar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
                 TextButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context); 
-                    Navigator.push(
+                  onPressed: () async {
+                    Navigator.pop(context);
+                    final resultado = await Navigator.push<String>(
                       context,
                       MaterialPageRoute(
                         builder: (context) => TelaAdicionarOpcao(tipo: tipo),
                       ),
                     );
+                    if (resultado != null && resultado.trim().isNotEmpty) {
+                      aoCriarNovaOpcao(resultado);
+                    }
                   },
                   icon: const Icon(Icons.add_circle_outline, color: Colors.white),
                   label: Text('Adicionar $tipo', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),

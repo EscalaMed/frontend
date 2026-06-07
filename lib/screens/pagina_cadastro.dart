@@ -17,7 +17,7 @@ class PaginaCadastro extends StatefulWidget {
 class _PaginaCadastroState extends State<PaginaCadastro> {
   final PageController _controladorPagina = PageController();
   int _etapaAtual = 0;
-  final int _totalEtapas = 5;
+  final int _totalEtapas = 3; 
   bool _estaCarregando = false;
 
   final _nomeController = TextEditingController();
@@ -35,8 +35,8 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
   final _senhaController = TextEditingController();
   final _confirmaSenhaController = TextEditingController();
 
-  List<Map<String, String>> _coordenadores = [];
-  List<Map<String, String>> _setores = [];
+  final List<Map<String, String>> _coordenadores = [];
+  final List<Map<String, String>> _setores = [];
 
   void adicionarCoordenador(Map<String, String> novoCoordenador) {
     setState(() {
@@ -139,41 +139,37 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
           "logotipo": "",
           "senha": _senhaController.text,
           "coordenadores": _coordenadores,
-          "setores": _setores
+          "setores": _setores,
         }),
       );
+      if (!mounted) return;
 
       final dadosJson = jsonDecode(resposta.body);
 
       if (resposta.statusCode == 201) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(dadosJson['msg'], textAlign: TextAlign.center),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.pop(context);
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(dadosJson['msg'] ?? 'Erro no cadastro', textAlign: TextAlign.center),
-              backgroundColor: Colors.redAccent,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Falha na comunicação com o servidor', textAlign: TextAlign.center),
-            backgroundColor: Colors.red,
+          SnackBar(
+            content: Text(dadosJson['msg'] ?? 'Cadastro realizado com sucesso!', textAlign: TextAlign.center),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(dadosJson['msg'] ?? 'Erro no cadastro', textAlign: TextAlign.center),
+            backgroundColor: Colors.redAccent,
           ),
         );
       }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Falha na comunicação com o servidor', textAlign: TextAlign.center),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -198,6 +194,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
       );
       return;
     }
+
     if (_etapaAtual < _totalEtapas - 1) {
       _controladorPagina.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -270,6 +267,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 16),
                 _estaCarregando
                     ? const Center(
                         child: CircularProgressIndicator(
@@ -278,7 +276,9 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
                       )
                     : BotoesNavegacao(
                         aoVoltar: _voltarEtapa,
-                        textoContinuar: _etapaAtual == _totalEtapas - 1 ? 'Concluir Cadastro' : 'Continuar',
+                        textoContinuar: _etapaAtual == _totalEtapas - 1
+                            ? 'Cadastrar'
+                            : 'Continuar',
                         aoContinuar: _avancarEtapa,
                       ),
               ],

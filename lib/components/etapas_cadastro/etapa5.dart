@@ -16,6 +16,8 @@ class _TelaSetoresState extends State<TelaSetores> {
   final TextEditingController _nomeSetorController = TextEditingController();
   final TextEditingController _coordenadorController = TextEditingController();
 
+  List<String> _listaCoordenadores = ['Dr. Carlos Alberto', 'Dra. Mariana Souza'];
+
   @override
   void dispose() {
     _nomeSetorController.dispose();
@@ -24,14 +26,14 @@ class _TelaSetoresState extends State<TelaSetores> {
   }
 
   void _concluirEVoltar() {
-    if (_nomeSetorController.text.trim().isEmpty || _coordenadorController.text.trim().isEmpty) {
+    if (_nomeSetorController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Preencha todos os campos do setor!', textAlign: TextAlign.center), backgroundColor: Colors.redAccent),
+        const SnackBar(content: Text('O nome do setor é obrigatório!', textAlign: TextAlign.center), backgroundColor: Colors.redAccent),
       );
       return;
     }
     Navigator.pop(context, {
-      'nome_setor': _nomeSetorController.text.trim(),
+      'nome': _nomeSetorController.text.trim(),
       'coordenador_responsavel': _coordenadorController.text.trim(),
     });
   }
@@ -46,12 +48,12 @@ class _TelaSetoresState extends State<TelaSetores> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color.fromARGB(255, 9, 17, 131)),
+          icon: const Icon(Icons.arrow_back_ios_new, color: corAzulEscuro),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Adicionar Setores',
-          style: TextStyle(color: Color.fromARGB(255, 9, 17, 131), fontWeight: FontWeight.bold),
+          'Adicionar Setor',
+          style: TextStyle(color: corAzulEscuro, fontWeight: FontWeight.bold),
         ),
       ),
       body: SafeArea(
@@ -66,11 +68,24 @@ class _TelaSetoresState extends State<TelaSetores> {
               Expanded(
                 child: Column(
                   children: [
-                    CampoTextoCustomizado(label: 'Nome do Setor', keyboardType: TextInputType.name, controller: _nomeSetorController),
+                    CampoTextoCustomizado(label: 'Nome do Setor', hintText: 'Ex: UTI Geral, Pediatria...', controller: _nomeSetorController),
                     const SizedBox(height: 16),
                     GestureDetector(
-                      onTap: () => mostrarModalSelecao(context: context, tipo: 'Coordenador', opcoes: [], aoSelecionar: (val) => setState(() => _coordenadorController.text = val)),
-                      child: AbsorbPointer(child: CampoTextoCustomizado(label: 'Coordenador', controller: _coordenadorController, iconeDireita: Icons.keyboard_arrow_down)),
+                      onTap: () => mostrarModalSelecao(
+                        context: context,
+                        tipo: 'Coordenadores',
+                        opcoes: _listaCoordenadores,
+                        aoSelecionar: (val) => setState(() => _coordenadorController.text = val),
+                        aoCriarNovaOpcao: (novoCoord) {
+                          setState(() {
+                            _listaCoordenadores.add(novoCoord);
+                            _coordenadorController.text = novoCoord;
+                          });
+                        },
+                      ),
+                      child: AbsorbPointer(
+                        child: CampoTextoCustomizado(label: 'Coordenador Responsável (Opcional)', controller: _coordenadorController, iconeDireita: Icons.keyboard_arrow_down),
+                      ),
                     ),
                   ],
                 ),

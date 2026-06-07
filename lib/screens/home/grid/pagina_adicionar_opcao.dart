@@ -14,6 +14,7 @@ class TelaAdicionarOpcao extends StatefulWidget {
 
 class _TelaAdicionarOpcaoState extends State<TelaAdicionarOpcao> {
   final TextEditingController _nomeController = TextEditingController();
+  bool _carregandoOpcao = false;
 
   @override
   void dispose() {
@@ -28,6 +29,11 @@ class _TelaAdicionarOpcaoState extends State<TelaAdicionarOpcao> {
       );
       return;
     }
+
+    setState(() {
+      _carregandoOpcao = true;
+    });
+
     final url = Uri.parse('http://10.0.2.2:5000/adicionar_opcao');
 
     try {
@@ -40,6 +46,8 @@ class _TelaAdicionarOpcaoState extends State<TelaAdicionarOpcao> {
         }),
       );
 
+      if (!mounted) return;
+
       if (response.statusCode == 201) {
         Navigator.pop(context, _nomeController.text.trim());
       } else {
@@ -48,9 +56,16 @@ class _TelaAdicionarOpcaoState extends State<TelaAdicionarOpcao> {
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Erro de conexão', textAlign: TextAlign.center)),
       );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _carregandoOpcao = false;
+        });
+      }
     }
   }
 
@@ -95,7 +110,6 @@ class _TelaAdicionarOpcaoState extends State<TelaAdicionarOpcao> {
                         style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       ),
                       const SizedBox(height: 32),
-                      
                       CampoTextoCustomizado(
                         label: 'Nome do(a) ${widget.tipo}',
                         controller: _nomeController,
@@ -104,12 +118,11 @@ class _TelaAdicionarOpcaoState extends State<TelaAdicionarOpcao> {
                   ),
                 ),
               ),
-
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _salvar,
+                  onPressed: _carregandoOpcao ? null : _salvar,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: corAzulEscuro,
                     foregroundColor: Colors.white,
@@ -117,17 +130,23 @@ class _TelaAdicionarOpcaoState extends State<TelaAdicionarOpcao> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Salvar',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(width: 8),
-                      Icon(Icons.check, size: 18),
-                    ],
-                  ),
+                  child: _carregandoOpcao
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Salvar',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(width: 8),
+                            Icon(Icons.check, size: 18),
+                          ],
+                        ),
                 ),
               ),
             ],

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../cartao.dart';
 import 'etapa4.dart';
-import 'etapa5.dart';
+import 'etapa5.dart'; 
 
 class Etapa3 extends StatelessWidget {
   final bool ehTelaIndependente;
@@ -57,7 +57,7 @@ class Etapa3 extends StatelessWidget {
                 ),
               );
               if (resultado != null && aoAdicionarCoordenador != null) {
-                aoAdicionarCoordenador!(resultado);
+                aoAdicionarCoordenador!(Map<String, String>.from(resultado));
               }
             },
           ),
@@ -77,7 +77,7 @@ class Etapa3 extends StatelessWidget {
                 ),
               );
               if (resultado != null && aoAdicionarSetor != null) {
-                aoAdicionarSetor!(resultado);
+                aoAdicionarSetor!(Map<String, String>.from(resultado));
               }
             },
           ),

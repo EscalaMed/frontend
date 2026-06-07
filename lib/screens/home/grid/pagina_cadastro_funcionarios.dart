@@ -10,18 +10,52 @@ class PaginaCadastroFuncionarios extends StatefulWidget {
 }
 
 class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios> {
+  final TextEditingController _nomeController = TextEditingController();
+  final TextEditingController _cpfController = TextEditingController();
+  final TextEditingController _telefoneController = TextEditingController();
+  final TextEditingController _registroController = TextEditingController();
+
   final TextEditingController _cargoController = TextEditingController();
   final TextEditingController _setorController = TextEditingController();
   final TextEditingController _contratoController = TextEditingController();
   final TextEditingController _cargaController = TextEditingController();
 
+  List<String> _listaCargos = ['Enfermeiro(a)', 'Médico(a)', 'Recepcionista', 'Técnico(a) em Enfermagem'];
+  List<String> _listaSetores = ['Pronto Socorro', 'Pediatria', 'UTI Geral', 'Ambulatório'];
+  List<String> _listaContratos = ['CLT', 'PJ', 'Estágio', 'Temporário'];
+  List<String> _listaCargasHorarias = ['20h semanais', '30h semanais', '40h semanais', 'Escala 12x36'];
+
   @override
   void dispose() {
+    _nomeController.dispose();
+    _cpfController.dispose();
+    _telefoneController.dispose();
+    _registroController.dispose();
     _cargoController.dispose();
     _setorController.dispose();
     _contratoController.dispose();
     _cargaController.dispose();
     super.dispose();
+  }
+
+  void _concluirCadastro() {
+    if (_nomeController.text.trim().isEmpty || _cpfController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, preencha o nome e CPF.'), backgroundColor: Colors.redAccent),
+      );
+      return;
+    }
+    final dadosFuncionario = {
+      'nome': _nomeController.text.trim(),
+      'cpf': _cpfController.text.trim(),
+      'telefone': _telefoneController.text.trim(),
+      'registro': _registroController.text.trim(),
+      'cargo': _cargoController.text.trim(),
+      'setor': _setorController.text.trim(),
+      'contrato': _contratoController.text.trim(),
+      'carga_horaria': _cargaController.text.trim(),
+    };
+    Navigator.pop(context, dadosFuncionario);
   }
 
   @override
@@ -53,21 +87,22 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      const CampoTextoCustomizado(label: 'Nome Completo', keyboardType: TextInputType.name),
+                      CampoTextoCustomizado(label: 'Nome Completo', keyboardType: TextInputType.name, controller: _nomeController),
                       const SizedBox(height: 16),
                       
                       Row(
-                        children: const [
-                          Expanded(child: CampoTextoCustomizado(label: 'CPF', keyboardType: TextInputType.number)),
-                          SizedBox(width: 16),
-                          Expanded(child: CampoTextoCustomizado(label: 'Telefone', keyboardType: TextInputType.phone)),
+                        children: [
+                          Expanded(child: CampoTextoCustomizado(label: 'CPF', keyboardType: TextInputType.number, controller: _cpfController)),
+                          const SizedBox(width: 16),
+                          Expanded(child: CampoTextoCustomizado(label: 'Telefone', keyboardType: TextInputType.phone, controller: _telefoneController)),
                         ],
                       ),
                       const SizedBox(height: 16),
 
-                      const CampoTextoCustomizado(
+                      CampoTextoCustomizado(
                         label: 'Número de Registro Profissional', 
                         hintText: 'CRM, COREN, CRP...',
+                        controller: _registroController,
                       ),
                       const SizedBox(height: 16),
 
@@ -76,10 +111,12 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
                           mostrarModalSelecao(
                             context: context,
                             tipo: 'Cargos',
-                            opcoes: [],
-                            aoSelecionar: (escolha) {
+                            opcoes: _listaCargos,
+                            aoSelecionar: (escolha) => setState(() => _cargoController.text = escolha),
+                            aoCriarNovaOpcao: (novaOpcao) {
                               setState(() {
-                                _cargoController.text = escolha;
+                                _listaCargos.add(novaOpcao);
+                                _cargoController.text = novaOpcao;
                               });
                             },
                           );
@@ -99,10 +136,12 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
                           mostrarModalSelecao(
                             context: context,
                             tipo: 'Setores',
-                            opcoes: [],
-                            aoSelecionar: (escolha) {
+                            opcoes: _listaSetores,
+                            aoSelecionar: (escolha) => setState(() => _setorController.text = escolha),
+                            aoCriarNovaOpcao: (novaOpcao) {
                               setState(() {
-                                _setorController.text = escolha;
+                                _listaSetores.add(novaOpcao);
+                                _setorController.text = novaOpcao;
                               });
                             },
                           );
@@ -122,8 +161,14 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
                           mostrarModalSelecao(
                             context: context,
                             tipo: 'Contratação',
-                            opcoes: [],
+                            opcoes: _listaContratos,
                             aoSelecionar: (escolha) => setState(() => _contratoController.text = escolha),
+                            aoCriarNovaOpcao: (novaOpcao) {
+                              setState(() {
+                                _listaContratos.add(novaOpcao);
+                                _contratoController.text = novaOpcao;
+                              });
+                            },
                           );
                         },
                         child: AbsorbPointer(
@@ -141,8 +186,14 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
                           mostrarModalSelecao(
                             context: context,
                             tipo: 'Carga Horária',
-                            opcoes: [],
+                            opcoes: _listaCargasHorarias,
                             aoSelecionar: (escolha) => setState(() => _cargaController.text = escolha),
+                            aoCriarNovaOpcao: (novaOpcao) {
+                              setState(() {
+                                _listaCargasHorarias.add(novaOpcao);
+                                _cargaController.text = novaOpcao;
+                              });
+                            },
                           );
                         },
                         child: AbsorbPointer(
@@ -163,9 +214,7 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                  onPressed: _concluirCadastro,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: corAzulEscuro,
                     foregroundColor: Colors.white,
