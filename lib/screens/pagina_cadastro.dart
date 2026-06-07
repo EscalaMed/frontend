@@ -272,6 +272,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
                         confirmaSenhaController: _confirmaSenhaController,
                       ),
                       Etapa3(
+                        progressoAtual: _calcularProgresso(),
                         coordenadoresCadastrados: _coordenadores,
                         setoresCadastrados: _setores,
                         aoAdicionarCoordenador: adicionarCoordenador,

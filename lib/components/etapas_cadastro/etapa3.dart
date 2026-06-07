@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../cartao.dart';
-import '../etapas_cadastro/etapa4.dart';
-import '../etapas_cadastro/etapa5.dart';
+import 'etapa4.dart';
+import 'etapa5.dart';
 
 class Etapa3 extends StatelessWidget {
   final bool ehTelaIndependente;
+  final double progressoAtual;
   final List<Map<String, String>>? coordenadoresCadastrados;
   final List<Map<String, String>>? setoresCadastrados;
   final Function(Map<String, String>)? aoAdicionarCoordenador;
@@ -13,6 +14,7 @@ class Etapa3 extends StatelessWidget {
   const Etapa3({
     super.key, 
     this.ehTelaIndependente = false,
+    this.progressoAtual = 0.50, 
     this.coordenadoresCadastrados,
     this.setoresCadastrados,
     this.aoAdicionarCoordenador,
@@ -46,11 +48,17 @@ class Etapa3 extends StatelessWidget {
             titulo: 'Coordenador ${(coordenadoresCadastrados?.isNotEmpty ?? false) ? "(${coordenadoresCadastrados!.length})" : ""}',
             subtitulo: 'Adicione coordenadores.',
             onTap: () async {
+              double progressoProjetado = progressoAtual;
+              if (coordenadoresCadastrados == null || coordenadoresCadastrados!.isEmpty) {
+                progressoProjetado += 0.25;
+              }
+
               final resultado = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => TelaCoordenador(
                     ehTelaIndependente: ehTelaIndependente,
+                    progressoAtual: progressoProjetado,
                   ),
                 ),
               );
@@ -66,11 +74,17 @@ class Etapa3 extends StatelessWidget {
             titulo: 'Setores ${(setoresCadastrados?.isNotEmpty ?? false) ? "(${setoresCadastrados!.length})" : ""}',
             subtitulo: 'Defina setores e atribua coordenadores.',
             onTap: () async {
+              double progressoProjetado = progressoAtual;
+              if (setoresCadastrados == null || setoresCadastrados!.isEmpty) {
+                progressoProjetado += 0.25;
+              }
+
               final resultado = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => TelaSetores(
                     ehTelaIndependente: ehTelaIndependente,
+                    progressoAtual: progressoProjetado,
                   ),
                 ),
               );

@@ -6,7 +6,8 @@ import '../../components/modal_selecao.dart';
 
 class TelaCoordenador extends StatefulWidget {
   final bool ehTelaIndependente;
-  const TelaCoordenador({super.key, this.ehTelaIndependente = false});
+  final double progressoAtual;
+  const TelaCoordenador({super.key, this.ehTelaIndependente = false, this.progressoAtual = 0.50});
 
   @override
   State<TelaCoordenador> createState() => _TelaCoordenadorState();
@@ -70,7 +71,7 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
           child: Column(
             children: [
               if (!widget.ehTelaIndependente) ...[
-                const BarraProgressoEtapas(progresso: 0.75),
+                BarraProgressoEtapas(progresso: widget.progressoAtual),
                 const SizedBox(height: 24),
                 
                 const Align(

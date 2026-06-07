@@ -6,7 +6,8 @@ import '../../components/modal_selecao.dart';
 
 class TelaSetores extends StatefulWidget {
   final bool ehTelaIndependente;
-  const TelaSetores({super.key, this.ehTelaIndependente = false});
+  final double progressoAtual;
+  const TelaSetores({super.key, this.ehTelaIndependente = false, this.progressoAtual = 0.50});
 
   @override
   State<TelaSetores> createState() => _TelaSetoresState();
@@ -59,7 +60,7 @@ class _TelaSetoresState extends State<TelaSetores> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (!widget.ehTelaIndependente) ...[
-                const BarraProgressoEtapas(progresso: 1.0),
+                BarraProgressoEtapas(progresso: widget.progressoAtual),
                 const SizedBox(height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
