@@ -98,7 +98,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(dadosJson['msg'], textAlign: TextAlign.center,),
+              content: Text(dadosJson['msg']),
               backgroundColor: Colors.green,
             ),
           );
@@ -108,7 +108,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(dadosJson['msg'] ?? 'Erro no cadastro', textAlign: TextAlign.center,),
+              content: Text(dadosJson['msg'] ?? 'Erro no cadastro'),
               backgroundColor: Colors.redAccent,
             ),
           );
@@ -194,7 +194,13 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
                         cidadeController: _cidadeController,
                         estadoController: _estadoController,
                       ),
-                      Etapa2(),
+                      Etapa2(
+                        telefoneController: _telefoneController,
+                        emailController: _emailController,
+                        descricaoController: _descricaoController,
+                        senhaController: _senhaController,
+                        confirmaSenhaController: _confirmaSenhaController,
+                      ),
                       Etapa3()
                     ],
                   ),

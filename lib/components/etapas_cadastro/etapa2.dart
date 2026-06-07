@@ -2,7 +2,20 @@ import 'package:flutter/material.dart';
 import '../campo_texto.dart';
 
 class Etapa2 extends StatelessWidget {
-  const Etapa2({super.key});
+  final TextEditingController telefoneController;
+  final TextEditingController emailController;
+  final TextEditingController descricaoController;
+  final TextEditingController senhaController;
+  final TextEditingController confirmaSenhaController;
+
+  const Etapa2({
+    super.key,
+    required this.telefoneController,
+    required this.emailController,
+    required this.descricaoController,
+    required this.senhaController,
+    required this.confirmaSenhaController,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,13 +37,13 @@ class Etapa2 extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           
-          const CampoTextoCustomizado(label: 'Telefone', keyboardType: TextInputType.phone),
+          CampoTextoCustomizado(label: 'Telefone', keyboardType: TextInputType.phone, controller: telefoneController),
           const SizedBox(height: 16),
           
-          const CampoTextoCustomizado(label: 'E-mail', keyboardType: TextInputType.emailAddress),
+          CampoTextoCustomizado(label: 'E-mail', keyboardType: TextInputType.emailAddress, controller: emailController),
           const SizedBox(height: 16),
           
-          const CampoTextoCustomizado(label: 'Descrição', maxLines: 3),
+          CampoTextoCustomizado(label: 'Descrição', maxLines: 3, controller: descricaoController),
           const SizedBox(height: 16),
 
           GestureDetector(
@@ -65,9 +78,9 @@ class Etapa2 extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           
-          const CampoTextoCustomizado(label: 'Senha', isPassword: true),
+          CampoTextoCustomizado(label: 'Senha', isPassword: true, controller: senhaController),
           const SizedBox(height: 16),
-          const CampoTextoCustomizado(label: 'Confirme a Senha', isPassword: true),
+          CampoTextoCustomizado(label: 'Confirme a Senha', isPassword: true, controller: confirmaSenhaController),
           const SizedBox(height: 24),
         ],
       ),
