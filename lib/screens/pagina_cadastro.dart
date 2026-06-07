@@ -98,7 +98,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(dadosJson['msg']),
+              content: Text(dadosJson['msg'], textAlign: TextAlign.center,),
               backgroundColor: Colors.green,
             ),
           );
@@ -108,7 +108,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(dadosJson['msg'] ?? 'Erro no cadastro'),
+              content: Text(dadosJson['msg'] ?? 'Erro no cadastro', textAlign: TextAlign.center,),
               backgroundColor: Colors.redAccent,
             ),
           );
