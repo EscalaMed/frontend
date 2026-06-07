@@ -35,6 +35,21 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
   final _senhaController = TextEditingController();
   final _confirmaSenhaController = TextEditingController();
 
+  List<Map<String, String>> _coordenadores = [];
+  List<Map<String, String>> _setores = [];
+
+  void adicionarCoordenador(Map<String, String> novoCoordenador) {
+    setState(() {
+      _coordenadores.add(novoCoordenador);
+    });
+  }
+
+  void adicionarSetor(Map<String, String> novoSetor) {
+    setState(() {
+      _setores.add(novoSetor);
+    });
+  }
+
   @override
   void dispose() {
     _controladorPagina.dispose();
@@ -54,11 +69,45 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
     super.dispose();
   }
 
+  double _calcularProgresso() {
+    if (_etapaAtual == 0) return 0.25;
+    if (_etapaAtual == 1) return 0.50;
+    if (_etapaAtual == 2) {
+      double progresso = 0.50;
+      if (_coordenadores.isNotEmpty) progresso += 0.25;
+      if (_setores.isNotEmpty) progresso += 0.25;
+      return progresso;
+    }
+    return 1.0;
+  }
+
+  bool _validarEtapaAtual() {
+    if (_etapaAtual == 0) {
+      return _nomeController.text.trim().isNotEmpty &&
+             _cnpjController.text.trim().isNotEmpty &&
+             _crmController.text.trim().isNotEmpty &&
+             _cnesController.text.trim().isNotEmpty &&
+             _cepController.text.trim().isNotEmpty &&
+             _enderecoController.text.trim().isNotEmpty &&
+             _cidadeController.text.trim().isNotEmpty &&
+             _estadoController.text.trim().isNotEmpty;
+    } else if (_etapaAtual == 1) {
+      return _telefoneController.text.trim().isNotEmpty &&
+             _emailController.text.trim().isNotEmpty &&
+             _descricaoController.text.trim().isNotEmpty &&
+             _senhaController.text.trim().isNotEmpty &&
+             _confirmaSenhaController.text.trim().isNotEmpty;
+    } else if (_etapaAtual == 2) {
+      return true; 
+    }
+    return true;
+  }
+
   Future<void> _finalizarCadastro() async {
     if (_senhaController.text != _confirmaSenhaController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('As senhas não coincidem!'),
+          content: Text('As senhas não coincidem!', textAlign: TextAlign.center),
           backgroundColor: Colors.red,
         ),
       );
@@ -98,7 +147,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(dadosJson['msg']),
+              content: Text(dadosJson['msg'], textAlign: TextAlign.center),
               backgroundColor: Colors.green,
             ),
           );
@@ -108,7 +157,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(dadosJson['msg'] ?? 'Erro no cadastro'),
+              content: Text(dadosJson['msg'] ?? 'Erro no cadastro', textAlign: TextAlign.center),
               backgroundColor: Colors.redAccent,
             ),
           );
@@ -118,7 +167,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Falha na comunicação com o servidor'),
+            content: Text('Falha na comunicação com o servidor', textAlign: TextAlign.center),
             backgroundColor: Colors.red,
           ),
         );
@@ -133,6 +182,21 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
   }
 
   void _avancarEtapa() {
+    if (!_validarEtapaAtual()) {
+      
+      String msgErro = _etapaAtual == 2 
+          ? 'Cadastre pelo menos 1 Coordenador e 1 Setor para continuar.'
+          : 'Preencha todos os campos para continuar.';
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msgErro, textAlign: TextAlign.center),
+          backgroundColor: Colors.redAccent,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
     if (_etapaAtual < _totalEtapas - 1) {
       _controladorPagina.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -170,7 +234,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 BarraProgressoEtapas(
-                  progresso: (_etapaAtual + 1) / _totalEtapas,
+                  progresso: _calcularProgresso(),
                 ),
                 const SizedBox(height: 24),
 
@@ -201,7 +265,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
                         senhaController: _senhaController,
                         confirmaSenhaController: _confirmaSenhaController,
                       ),
-                      Etapa3()
+                      const Etapa3()
                     ],
                   ),
                 ),
