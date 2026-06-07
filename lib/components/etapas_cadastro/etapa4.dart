@@ -41,12 +41,12 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
                 'Adicionar Coordenador',
                 style: TextStyle(color: corAzulEscuro, fontWeight: FontWeight.bold, fontSize: 20),
               ),
-              centerTitle: true,
+              centerTitle: false,
             )
           : null,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 34.0),
           child: Column(
             children: [
               if (!widget.ehTelaIndependente) ...[

@@ -54,7 +54,9 @@ class Etapa3 extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const TelaSetores(),
+                  builder: (context) => TelaSetores(
+                    ehTelaIndependente: ehTelaIndependente,
+                  ),
                 ),
               );
             },
