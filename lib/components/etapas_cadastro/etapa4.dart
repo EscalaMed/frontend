@@ -13,14 +13,34 @@ class TelaCoordenador extends StatefulWidget {
 }
 
 class _TelaCoordenadorState extends State<TelaCoordenador> {
+  final TextEditingController _nomeController = TextEditingController();
+  final TextEditingController _cpfController = TextEditingController();
+  final TextEditingController _telefoneController = TextEditingController();
+  final TextEditingController _registroController = TextEditingController();
   final TextEditingController _cargoController = TextEditingController();
   final TextEditingController _contratoController = TextEditingController();
 
   @override
   void dispose() {
+    _nomeController.dispose();
+    _cpfController.dispose();
+    _telefoneController.dispose();
+    _registroController.dispose();
     _cargoController.dispose();
     _contratoController.dispose();
     super.dispose();
+  }
+
+  void _concluirEVoltar() {
+    final dadosDoCoordenador = {
+      'nome': _nomeController.text.trim(),
+      'cpf': _cpfController.text.trim(),
+      'telefone': _telefoneController.text.trim(),
+      'registro': _registroController.text.trim(),
+      'cargo': _cargoController.text.trim(),
+      'contrato': _contratoController.text.trim(),
+    };
+    Navigator.pop(context, dadosDoCoordenador);
   }
 
   @override
@@ -68,21 +88,22 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const CampoTextoCustomizado(label: 'Nome Completo', keyboardType: TextInputType.name),
+                      CampoTextoCustomizado(label: 'Nome Completo', keyboardType: TextInputType.name, controller: _nomeController),
                       const SizedBox(height: 16),
                       
                       Row(
-                        children: const [
-                          Expanded(child: CampoTextoCustomizado(label: 'CPF', keyboardType: TextInputType.number)),
-                          SizedBox(width: 16),
-                          Expanded(child: CampoTextoCustomizado(label: 'Telefone', keyboardType: TextInputType.phone)),
+                        children: [
+                          Expanded(child: CampoTextoCustomizado(label: 'CPF', keyboardType: TextInputType.number, controller: _cpfController)),
+                          const SizedBox(width: 16),
+                          Expanded(child: CampoTextoCustomizado(label: 'Telefone', keyboardType: TextInputType.phone, controller: _telefoneController)),
                         ],
                       ),
                       const SizedBox(height: 16),
 
-                      const CampoTextoCustomizado(
+                      CampoTextoCustomizado(
                         label: 'Número de Registro Profissional', 
                         hintText: 'CRM, COREN, CRP...',
+                        controller: _registroController,
                       ),
                       const SizedBox(height: 16),
 
@@ -141,9 +162,7 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+                    onPressed: _concluirEVoltar,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: corAzulEscuro,
                       foregroundColor: Colors.white,
@@ -154,10 +173,7 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          'Concluído',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
+                        Text('Concluído', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                         SizedBox(width: 8),
                         Icon(Icons.arrow_forward_ios, size: 18),
                       ],
@@ -168,9 +184,7 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
                 BotoesNavegacao(
                   textoContinuar: 'Concluído',
                   aoVoltar: () => Navigator.pop(context),
-                  aoContinuar: () {
-                    Navigator.pop(context, {'status': 'adicionado'});
-                  },
+                  aoContinuar: _concluirEVoltar, 
                 ),
             ],
           ),

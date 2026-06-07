@@ -9,16 +9,26 @@ class TelaSetores extends StatefulWidget {
   const TelaSetores({super.key, this.ehTelaIndependente = false});
 
   @override
-    State<TelaSetores> createState() => _TelaSetoresState();
-  }
+  State<TelaSetores> createState() => _TelaSetoresState();
+}
 
 class _TelaSetoresState extends State<TelaSetores> {
+  final TextEditingController _nomeSetorController = TextEditingController();
   final TextEditingController _coordenadorController = TextEditingController();
 
   @override
   void dispose() {
+    _nomeSetorController.dispose();
     _coordenadorController.dispose();
     super.dispose();
+  }
+
+  void _concluirEVoltar() {
+    final dadosDoSetor = {
+      'nome_setor': _nomeSetorController.text.trim(),
+      'coordenador_responsavel': _coordenadorController.text.trim(),
+    };
+    Navigator.pop(context, dadosDoSetor);
   }
 
   @override
@@ -67,7 +77,7 @@ class _TelaSetoresState extends State<TelaSetores> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      const CampoTextoCustomizado(label: 'Nome do Setor', keyboardType: TextInputType.name),
+                      CampoTextoCustomizado(label: 'Nome do Setor', keyboardType: TextInputType.name, controller: _nomeSetorController),
                       const SizedBox(height: 16),
                       
                       GestureDetector(
@@ -102,9 +112,7 @@ class _TelaSetoresState extends State<TelaSetores> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+                    onPressed: _concluirEVoltar,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: corAzulEscuro,
                       foregroundColor: Colors.white,
@@ -115,10 +123,7 @@ class _TelaSetoresState extends State<TelaSetores> {
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          'Concluído',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
+                        Text('Concluído', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                         SizedBox(width: 8),
                         Icon(Icons.arrow_forward_ios, size: 18),
                       ],
@@ -129,9 +134,7 @@ class _TelaSetoresState extends State<TelaSetores> {
                 BotoesNavegacao(
                   textoContinuar: 'Concluído',
                   aoVoltar: () => Navigator.pop(context),
-                  aoContinuar: () {
-                    Navigator.pop(context, {'status': 'adicionado'});
-                  },
+                  aoContinuar: _concluirEVoltar,
                 ),
             ],
           ),
