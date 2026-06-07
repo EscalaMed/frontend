@@ -25,6 +25,20 @@ class _TelaSetoresState extends State<TelaSetores> {
   }
 
   void _concluirEVoltar() {
+    if (_nomeSetorController.text.trim().isEmpty ||
+        _coordenadorController.text.trim().isEmpty) {
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Preencha todos os campos do setor!', 
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return; 
+    }
     final dadosDoSetor = {
       'nome_setor': _nomeSetorController.text.trim(),
       'coordenador_responsavel': _coordenadorController.text.trim(),

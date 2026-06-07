@@ -33,6 +33,23 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
   }
 
   void _concluirEVoltar() {
+    if (_nomeController.text.trim().isEmpty ||
+        _cpfController.text.trim().isEmpty ||
+        _telefoneController.text.trim().isEmpty ||
+        _registroController.text.trim().isEmpty ||
+        _cargoController.text.trim().isEmpty ||
+        _contratoController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Preencha todos os campos do coordenador!', 
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return; 
+    }
     final dadosDoCoordenador = {
       'nome': _nomeController.text.trim(),
       'cpf': _cpfController.text.trim(),
