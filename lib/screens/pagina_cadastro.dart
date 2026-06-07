@@ -84,13 +84,13 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
   bool _validarEtapaAtual() {
     if (_etapaAtual == 0) {
       return _nomeController.text.trim().isNotEmpty &&
-        _cnpjController.text.trim().isNotEmpty &&
-        _crmController.text.trim().isNotEmpty &&
-        _cnesController.text.trim().isNotEmpty &&
-        _cepController.text.trim().isNotEmpty &&
-        _enderecoController.text.trim().isNotEmpty &&
-        _cidadeController.text.trim().isNotEmpty &&
-        _estadoController.text.trim().isNotEmpty;
+          _cnpjController.text.trim().isNotEmpty &&
+          _crmController.text.trim().isNotEmpty &&
+          _cnesController.text.trim().isNotEmpty &&
+          _cepController.text.trim().isNotEmpty &&
+          _enderecoController.text.trim().isNotEmpty &&
+          _cidadeController.text.trim().isNotEmpty &&
+          _estadoController.text.trim().isNotEmpty;
     } else if (_etapaAtual == 1) {
       return _telefoneController.text.trim().isNotEmpty &&
           _emailController.text.trim().isNotEmpty &&
@@ -98,7 +98,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
           _senhaController.text.trim().isNotEmpty &&
           _confirmaSenhaController.text.trim().isNotEmpty;
     } else if (_etapaAtual == 2) {
-      return _coordenadores.isNotEmpty && _setores.isNotEmpty; 
+      return _coordenadores.isNotEmpty && _setores.isNotEmpty;
     }
     return true;
   }
@@ -107,10 +107,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
     if (_senhaController.text != _confirmaSenhaController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'As senhas não coincidem!',
-            textAlign: TextAlign.center,
-          ),
+          content: Text('As senhas não coincidem!', textAlign: TextAlign.center),
           backgroundColor: Colors.red,
         ),
       );
@@ -141,6 +138,8 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
           "descricao": _descricaoController.text.trim(),
           "logotipo": "",
           "senha": _senhaController.text,
+          "coordenadores": _coordenadores,
+          "setores": _setores
         }),
       );
 
@@ -160,10 +159,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                dadosJson['msg'] ?? 'Erro no cadastro',
-                textAlign: TextAlign.center,
-              ),
+              content: Text(dadosJson['msg'] ?? 'Erro no cadastro', textAlign: TextAlign.center),
               backgroundColor: Colors.redAccent,
             ),
           );
@@ -173,10 +169,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Falha na comunicação com o servidor',
-              textAlign: TextAlign.center,
-            ),
+            content: Text('Falha na comunicação com o servidor', textAlign: TextAlign.center),
             backgroundColor: Colors.red,
           ),
         );
@@ -234,16 +227,12 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
         absorbing: _estaCarregando,
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 32.0,
-              vertical: 24.0,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 BarraProgressoEtapas(progresso: _calcularProgresso()),
                 const SizedBox(height: 24),
-
                 Expanded(
                   child: PageView(
                     controller: _controladorPagina,
@@ -277,11 +266,10 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
                         setoresCadastrados: _setores,
                         aoAdicionarCoordenador: adicionarCoordenador,
                         aoAdicionarSetor: adicionarSetor,
-                      ),
+                      )
                     ],
                   ),
                 ),
-
                 _estaCarregando
                     ? const Center(
                         child: CircularProgressIndicator(
@@ -290,9 +278,7 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
                       )
                     : BotoesNavegacao(
                         aoVoltar: _voltarEtapa,
-                        textoContinuar: _etapaAtual == _totalEtapas - 1
-                            ? 'Concluir Cadastro'
-                            : 'Continuar',
+                        textoContinuar: _etapaAtual == _totalEtapas - 1 ? 'Concluir Cadastro' : 'Continuar',
                         aoContinuar: _avancarEtapa,
                       ),
               ],

@@ -12,9 +12,9 @@ class Etapa3 extends StatelessWidget {
   final Function(Map<String, String>)? aoAdicionarSetor;
 
   const Etapa3({
-    super.key, 
+    super.key,
     this.ehTelaIndependente = false,
-    this.progressoAtual = 0.50, 
+    this.progressoAtual = 0.50,
     this.coordenadoresCadastrados,
     this.setoresCadastrados,
     this.aoAdicionarCoordenador,
@@ -27,9 +27,9 @@ class Etapa3 extends StatelessWidget {
     const corFundoApp = Color(0xFFF4F6FA);
 
     Widget conteudoVisual = SingleChildScrollView(
-      padding: EdgeInsets.only(top: ehTelaIndependente ? 30.0 : 0.0), 
+      padding: EdgeInsets.only(top: ehTelaIndependente ? 30.0 : 0.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center, 
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (!ehTelaIndependente) ...[
             const Text(
@@ -42,23 +42,17 @@ class Etapa3 extends StatelessWidget {
             ),
             const SizedBox(height: 32),
           ],
-
           CartaoOpcao(
             icone: Icons.people_outline,
             titulo: 'Coordenador ${(coordenadoresCadastrados?.isNotEmpty ?? false) ? "(${coordenadoresCadastrados!.length})" : ""}',
             subtitulo: 'Adicione coordenadores.',
             onTap: () async {
-              double progressoProjetado = progressoAtual;
-              if (coordenadoresCadastrados == null || coordenadoresCadastrados!.isEmpty) {
-                progressoProjetado += 0.25;
-              }
-
               final resultado = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => TelaCoordenador(
                     ehTelaIndependente: ehTelaIndependente,
-                    progressoAtual: progressoProjetado,
+                    progressoAtual: progressoAtual,
                   ),
                 ),
               );
@@ -68,50 +62,38 @@ class Etapa3 extends StatelessWidget {
             },
           ),
           const SizedBox(height: 16),
-
           CartaoOpcao(
             icone: Icons.grid_view_outlined,
             titulo: 'Setores ${(setoresCadastrados?.isNotEmpty ?? false) ? "(${setoresCadastrados!.length})" : ""}',
             subtitulo: 'Defina setores e atribua coordenadores.',
             onTap: () async {
-              double progressoProjetado = progressoAtual;
-              if (setoresCadastrados == null || setoresCadastrados!.isEmpty) {
-                progressoProjetado += 0.25;
-              }
-
               final resultado = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => TelaSetores(
                     ehTelaIndependente: ehTelaIndependente,
-                    progressoAtual: progressoProjetado,
+                    progressoAtual: progressoAtual,
                   ),
                 ),
               );
-              
               if (resultado != null && aoAdicionarSetor != null) {
                 aoAdicionarSetor!(resultado);
               }
             },
           ),
           const SizedBox(height: 16),
-
           CartaoOpcao(
             icone: Icons.person_outline,
             titulo: 'Editar Informações',
             subtitulo: 'Altere informações pessoais e atualize perfil.',
-            onTap: () {
-            },
+            onTap: () {},
           ),
           const SizedBox(height: 16),
-
           CartaoOpcao(
             icone: Icons.settings_outlined,
             titulo: 'Configurações',
-            onTap: () {
-            },
+            onTap: () {},
           ),
-          
           const SizedBox(height: 24),
         ],
       ),
