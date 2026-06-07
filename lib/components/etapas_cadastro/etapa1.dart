@@ -2,7 +2,26 @@ import 'package:flutter/material.dart';
 import '../campo_texto.dart';
 
 class Etapa1 extends StatelessWidget {
-  const Etapa1({super.key});
+  final TextEditingController nomeController;
+  final TextEditingController cnpjController;
+  final TextEditingController crmController;
+  final TextEditingController cnesController;
+  final TextEditingController cepController;
+  final TextEditingController enderecoController;
+  final TextEditingController cidadeController;
+  final TextEditingController estadoController;
+
+  const Etapa1({
+    super.key,
+    required this.nomeController,
+    required this.cnpjController,
+    required this.crmController,
+    required this.cnesController,
+    required this.cepController,
+    required this.enderecoController,
+    required this.cidadeController,
+    required this.estadoController,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,33 +38,32 @@ class Etapa1 extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 32),
-          const SizedBox(height: 10),
-          const CampoTextoCustomizado(label: 'Nome da Instituição', keyboardType: TextInputType.name),
+          CampoTextoCustomizado(label: 'Nome da Instituição', keyboardType: TextInputType.name, controller: nomeController),
           const SizedBox(height: 16),
           
-          const CampoTextoCustomizado(label: 'CNPJ', keyboardType: TextInputType.number),
+          CampoTextoCustomizado(label: 'CNPJ', keyboardType: TextInputType.number, controller: cnpjController),
           const SizedBox(height: 16),
           
-          const CampoTextoCustomizado(label: 'CRM Jurídico', keyboardType: TextInputType.text),
+          CampoTextoCustomizado(label: 'CRM Jurídico', keyboardType: TextInputType.text, controller: crmController),
           const SizedBox(height: 16),
           
-          const CampoTextoCustomizado(label: 'CNES', keyboardType: TextInputType.number),
+          CampoTextoCustomizado(label: 'CNES', keyboardType: TextInputType.number, controller: cnesController),
           const SizedBox(height: 16),
           
-          const CampoTextoCustomizado(label: 'CEP', keyboardType: TextInputType.number),
+          CampoTextoCustomizado(label: 'CEP', keyboardType: TextInputType.number, controller: cepController),
           const SizedBox(height: 16),
           
-          const CampoTextoCustomizado(label: 'Endereço', keyboardType: TextInputType.streetAddress),
+          CampoTextoCustomizado(label: 'Endereço', keyboardType: TextInputType.streetAddress, controller: enderecoController),
           const SizedBox(height: 16),
           
           Row(
-            children: const [
+            children: [
               Expanded(
-                child: CampoTextoCustomizado(label: 'Cidade', keyboardType: TextInputType.text),
+                child: CampoTextoCustomizado(label: 'Cidade', keyboardType: TextInputType.text, controller: cidadeController),
               ),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               Expanded(
-                child: CampoTextoCustomizado(label: 'Estado (UF)', keyboardType: TextInputType.text),
+                child: CampoTextoCustomizado(label: 'Estado (UF)', keyboardType: TextInputType.text, controller: estadoController),
               ),
             ],
           ),

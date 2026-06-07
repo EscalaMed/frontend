@@ -183,7 +183,20 @@ class _PaginaCadastroState extends State<PaginaCadastro> {
                         _etapaAtual = index;
                       });
                     },
-                    children: [Etapa1(), Etapa2(), Etapa3()],
+                    children: [
+                      Etapa1(
+                        nomeController: _nomeController,
+                        cnpjController: _cnpjController,
+                        crmController: _crmController,
+                        cnesController: _cnesController,
+                        cepController: _cepController,
+                        enderecoController: _enderecoController,
+                        cidadeController: _cidadeController,
+                        estadoController: _estadoController,
+                      ),
+                      Etapa2(),
+                      Etapa3()
+                    ],
                   ),
                 ),
 
