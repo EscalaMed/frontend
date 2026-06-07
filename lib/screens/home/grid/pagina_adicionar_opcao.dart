@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../components/campo_texto.dart'; 
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class TelaAdicionarOpcao extends StatefulWidget {
   final String tipo;
@@ -17,6 +19,39 @@ class _TelaAdicionarOpcaoState extends State<TelaAdicionarOpcao> {
   void dispose() {
     _nomeController.dispose();
     super.dispose();
+  }
+
+  Future<void> _salvar() async {
+    if (_nomeController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Digite o nome do(a) ${widget.tipo}')),
+      );
+      return;
+    }
+    final url = Uri.parse('http://10.0.2.2:5000/adicionar_opcao');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "tipo": widget.tipo,
+          "valor": _nomeController.text.trim(),
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        Navigator.pop(context, _nomeController.text.trim());
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao salvar no servidor', textAlign: TextAlign.center)),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro de conexão', textAlign: TextAlign.center)),
+      );
+    }
   }
 
   @override
@@ -74,9 +109,7 @@ class _TelaAdicionarOpcaoState extends State<TelaAdicionarOpcao> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context); 
-                  },
+                  onPressed: _salvar,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: corAzulEscuro,
                     foregroundColor: Colors.white,
