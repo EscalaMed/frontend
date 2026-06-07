@@ -5,7 +5,19 @@ import '../etapas_cadastro/etapa5.dart';
 
 class Etapa3 extends StatelessWidget {
   final bool ehTelaIndependente;
-  const Etapa3({super.key, this.ehTelaIndependente = false});
+  final List<Map<String, String>>? coordenadoresCadastrados;
+  final List<Map<String, String>>? setoresCadastrados;
+  final Function(Map<String, String>)? aoAdicionarCoordenador;
+  final Function(Map<String, String>)? aoAdicionarSetor;
+
+  const Etapa3({
+    super.key, 
+    this.ehTelaIndependente = false,
+    this.coordenadoresCadastrados,
+    this.setoresCadastrados,
+    this.aoAdicionarCoordenador,
+    this.aoAdicionarSetor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +43,10 @@ class Etapa3 extends StatelessWidget {
 
           CartaoOpcao(
             icone: Icons.people_outline,
-            titulo: 'Coordenador',
+            titulo: 'Coordenador ${(coordenadoresCadastrados?.isNotEmpty ?? false) ? "(${coordenadoresCadastrados!.length})" : ""}',
             subtitulo: 'Adicione coordenadores.',
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final resultado = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => TelaCoordenador(
@@ -42,16 +54,19 @@ class Etapa3 extends StatelessWidget {
                   ),
                 ),
               );
+              if (resultado != null && aoAdicionarCoordenador != null) {
+                aoAdicionarCoordenador!(resultado);
+              }
             },
           ),
           const SizedBox(height: 16),
 
           CartaoOpcao(
             icone: Icons.grid_view_outlined,
-            titulo: 'Setores',
+            titulo: 'Setores ${(setoresCadastrados?.isNotEmpty ?? false) ? "(${setoresCadastrados!.length})" : ""}',
             subtitulo: 'Defina setores e atribua coordenadores.',
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final resultado = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => TelaSetores(
@@ -59,6 +74,10 @@ class Etapa3 extends StatelessWidget {
                   ),
                 ),
               );
+              
+              if (resultado != null && aoAdicionarSetor != null) {
+                aoAdicionarSetor!(resultado);
+              }
             },
           ),
           const SizedBox(height: 16),

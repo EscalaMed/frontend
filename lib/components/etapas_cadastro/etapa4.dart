@@ -50,7 +50,7 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
           child: Column(
             children: [
               if (!widget.ehTelaIndependente) ...[
-                const BarraProgressoEtapas(progresso: 0.6),
+                const BarraProgressoEtapas(progresso: 0.75),
                 const SizedBox(height: 24),
                 
                 const Align(
@@ -169,7 +169,7 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
                   textoContinuar: 'Concluído',
                   aoVoltar: () => Navigator.pop(context),
                   aoContinuar: () {
-                    Navigator.pop(context);
+                    Navigator.pop(context, {'status': 'adicionado'});
                   },
                 ),
             ],

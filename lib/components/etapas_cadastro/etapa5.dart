@@ -49,7 +49,7 @@ class _TelaSetoresState extends State<TelaSetores> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (!widget.ehTelaIndependente) ...[
-                const BarraProgressoEtapas(progresso: 0.6),
+                const BarraProgressoEtapas(progresso: 1.0),
                 const SizedBox(height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -130,7 +130,7 @@ class _TelaSetoresState extends State<TelaSetores> {
                   textoContinuar: 'Concluído',
                   aoVoltar: () => Navigator.pop(context),
                   aoContinuar: () {
-                    Navigator.pop(context);
+                    Navigator.pop(context, {'status': 'adicionado'});
                   },
                 ),
             ],
