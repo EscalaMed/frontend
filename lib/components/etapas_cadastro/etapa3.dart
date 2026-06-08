@@ -10,6 +10,7 @@ class Etapa3 extends StatefulWidget {
   final List<Map<String, String>>? setoresCadastrados;
   final Function(Map<String, String>)? aoAdicionarCoordenador;
   final Function(Map<String, String>)? aoAdicionarSetor;
+  final String? role;
 
   const Etapa3({
     super.key,
@@ -19,6 +20,7 @@ class Etapa3 extends StatefulWidget {
     this.setoresCadastrados,
     this.aoAdicionarCoordenador,
     this.aoAdicionarSetor,
+    this.role,
   });
 
   @override
@@ -40,6 +42,13 @@ class _Etapa3State extends State<Etapa3> {
     const corAzulEscuro = Color.fromARGB(255, 9, 17, 131);
     const corFundoApp = Color(0xFFF4F6FA);
 
+    final faturamentoRole = widget.role?.toLowerCase() ?? '';
+    
+    // Separação explícita dos booleanos de permissão
+    final ehAdmin = faturamentoRole == 'administrador';
+    final ehCoordenador = faturamentoRole == 'coordenador';
+    final ehCoordenadorOuAdmin = ehCoordenador || ehAdmin;
+
     Widget conteudoVisual = SingleChildScrollView(
       padding: EdgeInsets.only(top: widget.ehTelaIndependente ? 30.0 : 0.0),
       child: Column(
@@ -57,71 +66,104 @@ class _Etapa3State extends State<Etapa3> {
             const SizedBox(height: 32),
           ],
 
-          CartaoOpcao(
-            icone: Icons.people_outline,
-            titulo: 'Coordenador ${_coordenadores.isNotEmpty ? "(${_coordenadores.length})" : ""}',
-            subtitulo: 'Adicione coordenadores.',
-            onTap: () async {
-              final resultado = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => TelaCoordenador(
-                    ehTelaIndependente: widget.ehTelaIndependente,
-                    progressoAtual: widget.progressoAtual,
+          // ── SEÇÃO DE FUNCIONALIDADES GERENCIAIS ──
+          // Aparece tanto para Coordenador quanto para Administrador
+          if (ehCoordenadorOuAdmin) ...[
+            CartaoOpcao(
+              icone: Icons.badge_outlined,
+              titulo: 'Listar Funcionários',
+              subtitulo: 'Visualize e gerencie a equipe de saúde.',
+              onTap: () {},
+            ),
+            const SizedBox(height: 16),
+            CartaoOpcao(
+              icone: Icons.calendar_month_outlined,
+              titulo: 'Listar Plantões Agendados',
+              subtitulo: 'Confira a escala completa dos próximos turnos.',
+              onTap: () {},
+            ),
+            const SizedBox(height: 16),
+            CartaoOpcao(
+              icone: Icons.swap_horizontal_circle_outlined,
+              titulo: 'Listar Trocas Pendentes',
+              subtitulo: 'Aprove ou recuse as solicitações de mudança.',
+              onTap: () {},
+            ),
+            const SizedBox(height: 16),
+            CartaoOpcao(
+              icone: Icons.add_box_outlined,
+              titulo: 'Criar Plantões',
+              subtitulo: 'Monte novas escalas e atribua horários.',
+              onTap: () {},
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // ── SEÇÃO DE CONFIGURAÇÃO E CADASTROS ESTRUTURAIS ──
+          // O administrador e quem não tem cargo (padrão) enxergam esses cards. 
+          // O coordenador puro é o único ocultado aqui.
+          if (ehAdmin || !ehCoordenadorOuAdmin) ...[
+            CartaoOpcao(
+              icone: Icons.people_outline,
+              titulo: 'Coordenador ${_coordenadores.isNotEmpty ? "(${_coordenadores.length})" : ""}',
+              subtitulo: 'Adicione coordenadores.',
+              onTap: () async {
+                final resultado = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TelaCoordenador(
+                      ehTelaIndependente: widget.ehTelaIndependente,
+                      progressoAtual: widget.progressoAtual,
+                    ),
                   ),
-                ),
-              );
+                );
 
-              if (resultado != null && resultado is Map<String, String>) {
-                if (widget.ehTelaIndependente) {
-                  setState(() {
-                    _coordenadoresLocais.add(resultado);
-                  });
-                } else {
-                  widget.aoAdicionarCoordenador?.call(resultado);
+                if (resultado != null && resultado is Map<String, String>) {
+                  if (widget.ehTelaIndependente) {
+                    setState(() {
+                      _coordenadoresLocais.add(resultado);
+                    });
+                  } else {
+                    widget.aoAdicionarCoordenador?.call(resultado);
+                  }
                 }
-              }
-            },
-          ),
-          const SizedBox(height: 16),
-
-          CartaoOpcao(
-            icone: Icons.grid_view_outlined,
-            titulo: 'Setores ${_setores.isNotEmpty ? "(${_setores.length})" : ""}',
-            subtitulo: 'Defina setores e atribua coordenadores.',
-            onTap: () async {
-              final resultado = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => TelaSetores(
-                    ehTelaIndependente: widget.ehTelaIndependente,
-                    progressoAtual: widget.progressoAtual,
+              },
+            ),
+            const SizedBox(height: 16),
+            CartaoOpcao(
+              icone: Icons.grid_view_outlined,
+              titulo: 'Setores ${_setores.isNotEmpty ? "(${_setores.length})" : ""}',
+              subtitulo: 'Defina setores e atribua coordenadores.',
+              onTap: () async {
+                final resultado = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TelaSetores(
+                      ehTelaIndependente: widget.ehTelaIndependente,
+                      progressoAtual: widget.progressoAtual,
+                    ),
                   ),
-                ),
-              );
+                );
 
-              if (resultado != null && resultado is Map<String, String>) {
-                if (widget.ehTelaIndependente) {
-                  setState(() {
-                    _setoresLocais.add(resultado);
-                  });
-                } else {
-                  widget.aoAdicionarSetor?.call(resultado);
+                if (resultado != null && resultado is Map<String, String>) {
+                  if (widget.ehTelaIndependente) {
+                    setState(() {
+                      _setoresLocais.add(resultado);
+                    });
+                  } else {
+                    widget.aoAdicionarSetor?.call(resultado);
+                  }
                 }
-              }
-            },
-          ),
-          const SizedBox(height: 16),
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Card de informações pessoais fixo para todos os perfis
           CartaoOpcao(
             icone: Icons.person_outline,
             titulo: 'Editar Informações',
             subtitulo: 'Altere informações pessoais e atualize perfil.',
-            onTap: () {},
-          ),
-          const SizedBox(height: 16),
-          CartaoOpcao(
-            icone: Icons.settings_outlined,
-            titulo: 'Configurações',
             onTap: () {},
           ),
           const SizedBox(height: 24),
@@ -136,7 +178,7 @@ class _Etapa3State extends State<Etapa3> {
                   foregroundColor: Colors.white,
                 ),
                 onPressed: () {
-                  if (_coordenadoresLocais.isEmpty && _setoresLocais.isEmpty) {
+                  if (!ehCoordenadorOuAdmin && _coordenadoresLocais.isEmpty && _setoresLocais.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Nenhuma alteração detectada para salvar.', textAlign: TextAlign.center),
@@ -148,7 +190,7 @@ class _Etapa3State extends State<Etapa3> {
                   
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Configurações do hospital atualizadas com sucesso!', textAlign: TextAlign.center),
+                      content: Text('Configurações salvas com sucesso!', textAlign: TextAlign.center),
                       backgroundColor: Colors.green,
                     ),
                   );

@@ -1,9 +1,8 @@
 // screens/pagina_coordenador.dart
 import 'package:flutter/material.dart';
 import '../components/card_grid_menu.dart';
+import '../components/etapas_cadastro/etapa3.dart';
 import 'pagina_escalas.dart';
-import 'pagina_troca_plantao.dart';
-import 'pagina_gerenciar_hospital.dart';
 import 'pagina_configuracoes.dart';
 
 class PaginaCoordenador extends StatefulWidget {
@@ -80,7 +79,7 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
               gradient: const LinearGradient(colors: [_cor, _vibrante],
                   begin: Alignment.topLeft, end: Alignment.bottomRight),
               borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(color: _vibrante.withOpacity(0.3), blurRadius: 12, offset: const Offset(0,6))]),
+              boxShadow: [BoxShadow(color: _vibrante.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0,6))]),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Meu Setor – ${widget.setor}',
                   style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500)),
@@ -139,10 +138,17 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
                 onTap: () => _navegar(const PaginaEscalas()),
               ),
               CardGridMenu(
-                icone: Icons.people_outline,
-                titulo: 'Minha\nEquipe',
-                onTap: () => _navegar(const PaginaGerenciarHospital()),
-              ),
+                      icone: Icons.local_hospital_outlined,
+                      titulo: 'Gerenciar\nHospital',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const Etapa3(ehTelaIndependente: true), 
+                          ),
+                        );
+                      },
+                    ),
               CardGridMenu(
                 icone: Icons.settings_outlined,
                 titulo: 'Configurações',
@@ -188,7 +194,7 @@ class _CardTroca extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(troca['nome']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cor)),
-            Text(troca['tempo']!, style: TextStyle(fontSize: 11, color: cor.withOpacity(0.4))),
+            Text(troca['tempo']!, style: TextStyle(fontSize: 11, color: cor.withValues(alpha: 0.4))),
           ])),
         ]),
         const SizedBox(height: 10),

@@ -23,9 +23,9 @@ class _PaginaTrocaPlantaoState extends State<PaginaTrocaPlantao> {
   int _aba = 0;
 
   final List<Map<String, String>> _solicitacoes = [
-    {'meuPlantao': '10/06 – Manhã (06h–14h)',  'plantaoDesejado': '12/06 – Tarde (14h–22h)',  'funcionario': 'Dr. Carlos Mendes', 'status': 'Pendente', 'motivo': 'Consulta médica particular'},
-    {'meuPlantao': '15/06 – Noite (22h–06h)',  'plantaoDesejado': '17/06 – Manhã (06h–14h)',  'funcionario': 'Enf. Ana Paula',    'status': 'Aceita',   'motivo': 'Compromisso familiar'},
-    {'meuPlantao': '20/06 – Tarde (14h–22h)',  'plantaoDesejado': '22/06 – Noite (22h–06h)',  'funcionario': 'Tec. Roberto Lima', 'status': 'Recusada', 'motivo': 'Viagem programada'},
+    {'meuPlantao': '10/06 - Manhã (06h-14h)',  'plantaoDesejado': '12/06 - Tarde (14h-22h)',  'funcionario': 'Dr. Carlos Mendes', 'status': 'Pendente', 'motivo': 'Consulta médica particular'},
+    {'meuPlantao': '15/06 - Noite (22h-06h)',  'plantaoDesejado': '17/06 - Manhã (06h-14h)',  'funcionario': 'Enf. Ana Paula',    'status': 'Aceita',   'motivo': 'Compromisso familiar'},
+    {'meuPlantao': '20/06 - Tarde (14h-22h)',  'plantaoDesejado': '22/06 - Noite (22h-06h)',  'funcionario': 'Tec. Roberto Lima', 'status': 'Recusada', 'motivo': 'Viagem programada'},
   ];
 
   @override
@@ -44,6 +44,7 @@ class _PaginaTrocaPlantaoState extends State<PaginaTrocaPlantao> {
       tipo: tipo,
       opcoes: opcoes,
       aoSelecionar: (v) => setState(() => ctrl.text = v),
+      aoCriarNovaOpcao: (novaOpcao) => setState(() => ctrl.text = novaOpcao), 
     );
   }
 
@@ -219,9 +220,9 @@ class _Formulario extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: cor.withOpacity(0.06),
+              color: cor.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: cor.withOpacity(0.15)),
+              border: Border.all(color: cor.withValues(alpha: 0.15)),
             ),
             child: Row(
               children: [
@@ -241,7 +242,7 @@ class _Formulario extends StatelessWidget {
 
           // Meu plantão
           GestureDetector(
-            onTap: () => s._selecionar('Plantão', ['10/06 – Manhã (06h–14h)', '11/06 – Tarde (14h–22h)', '12/06 – Noite (22h–06h)', '13/06 – Manhã (06h–14h)'], s._meuPlantaoCtrl),
+            onTap: () => s._selecionar('Plantão', ['10/06 - Manhã (06h-14h)', '11/06 - Tarde (14h-22h)', '12/06 - Noite (22h-06h)', '13/06 - Manhã (06h-14h)'], s._meuPlantaoCtrl),
             child: AbsorbPointer(child: CampoTextoCustomizado(label: 'Meu Plantão', hintText: 'Selecione o plantão que deseja ceder', controller: s._meuPlantaoCtrl, iconeDireita: Icons.keyboard_arrow_down)),
           ),
 
@@ -251,7 +252,7 @@ class _Formulario extends StatelessWidget {
           Center(
             child: Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: cor.withOpacity(0.08), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: cor.withValues(alpha: 0.08), shape: BoxShape.circle),
               child: const Icon(Icons.swap_vert_rounded, color: cor, size: 28),
             ),
           ),
@@ -260,7 +261,7 @@ class _Formulario extends StatelessWidget {
 
           // Plantão desejado
           GestureDetector(
-            onTap: () => s._selecionar('Plantão Desejado', ['14/06 – Tarde (14h–22h)', '15/06 – Noite (22h–06h)', '16/06 – Manhã (06h–14h)', '17/06 – Tarde (14h–22h)'], s._plantaoDesejadoCtrl),
+            onTap: () => s._selecionar('Plantão Desejado', ['14/06 - Tarde (14h-22h)', '15/06 - Noite (22h-06h)', '16/06 - Manhã (06h-14h)', '17/06 - Tarde (14h-22h)'], s._plantaoDesejadoCtrl),
             child: AbsorbPointer(child: CampoTextoCustomizado(label: 'Plantão Desejado', hintText: 'Selecione o plantão que deseja receber', controller: s._plantaoDesejadoCtrl, iconeDireita: Icons.keyboard_arrow_down)),
           ),
 
@@ -295,10 +296,10 @@ class _ListaSolicitacoes extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.swap_horiz_outlined, size: 64, color: cor.withOpacity(0.3)),
+            Icon(Icons.swap_horiz_outlined, size: 64, color: cor.withValues(alpha: 0.3)),
             const SizedBox(height: 16),
             Text('Nenhuma solicitação encontrada',
-                style: TextStyle(fontSize: 16, color: cor.withOpacity(0.5), fontWeight: FontWeight.w500)),
+                style: TextStyle(fontSize: 16, color: cor.withValues(alpha: 0.5), fontWeight: FontWeight.w500)),
           ],
         ),
       );
