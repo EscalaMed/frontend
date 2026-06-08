@@ -15,6 +15,7 @@ class PaginaCadastroFuncionarios extends StatefulWidget {
 
 class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios> {
   final TextEditingController _nomeController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _cpfController = TextEditingController();
   final TextEditingController _telefoneController = TextEditingController();
   final TextEditingController _registroController = TextEditingController();
@@ -32,6 +33,7 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
   @override
   void dispose() {
     _nomeController.dispose();
+    _emailController.dispose();
     _cpfController.dispose();
     _telefoneController.dispose();
     _registroController.dispose();
@@ -42,29 +44,50 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
     super.dispose();
   }
 
+  Future<int?> _garantirSetorNoServidor(String nomeSetor, String token) async {
+    final urlSetor = Uri.parse('http://10.0.2.2:5000/admin/setor');
+    try {
+      final resposta = await http.post(
+        urlSetor,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'nome': nomeSetor}),
+      );
+
+      if (resposta.statusCode == 201 || resposta.statusCode == 200) {
+        final dados = jsonDecode(resposta.body);
+        return dados['setor_id'];
+      }
+    } catch (e) {
+      print("Erro ao garantir setor: $e");
+    }
+    return null;
+  }
+
   Future<void> _concluirCadastro() async {
-    if (_nomeController.text.trim().isEmpty || _cpfController.text.trim().isEmpty) {
+    if (_nomeController.text.trim().isEmpty || 
+        _emailController.text.trim().isEmpty ||
+        _cpfController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, preencha o nome e CPF.'), backgroundColor: Colors.redAccent),
+        const SnackBar(content: Text('Por favor, preencha o nome, e-mail e CPF.'), backgroundColor: Colors.redAccent),
       );
       return;
     }
+    
+    if (_cargoController.text.isEmpty || 
+        _setorController.text.isEmpty || 
+        _contratoController.text.isEmpty || 
+        _cargaController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, preencha todas as opções antes de concluir.'), backgroundColor: Colors.orangeAccent),
+      );
+      return;
+    }
+
     final cpfLimpo = _cpfController.text.replaceAll(RegExp(r'[^0-9]'), '').trim();
     
-    final dadosFuncionario = {
-      'nome': _nomeController.text.trim(),
-      'cpf': cpfLimpo,
-      'telefone': _telefoneController.text.trim(),
-      'registro': _registroController.text.trim(),
-      'cargo': _cargoController.text.trim(),
-      'setor': _setorController.text.trim(),
-      'contrato': _contratoController.text.trim(),
-      'carga_horaria': _cargaController.text.trim(),
-      'email': '${_nomeController.text.trim().toLowerCase().replaceAll(' ', '')}@hospital.com', 
-      'senha': 'Mudar@123}',
-      'tipo': 'funcionario',
-    };
-
     if (widget.ehTelaIndependente) {
       const storage = FlutterSecureStorage();
       String? tokenJWT = await storage.read(key: 'token_jwt');
@@ -77,11 +100,43 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
         return;
       }
 
-      final url = Uri.parse('http://10.0.2.2:5000/admin/funcionarios');
+      final tokenLimpo = tokenJWT.trim();
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      int? idDoSetor = await _garantirSetorNoServidor(_setorController.text.trim(), tokenLimpo);
+
+      if (idDoSetor == null) {
+        if (!mounted) return;
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro: Setor não encontrado ou inválido no banco.'), backgroundColor: Colors.redAccent),
+        );
+        return;
+      }
+
+      final dadosFuncionario = {
+        'nome': _nomeController.text.trim(),
+        'email': _emailController.text.trim(),
+        'cpf': cpfLimpo,
+        'telefone': _telefoneController.text.trim(),
+        'registro_profissional': _registroController.text.trim(),
+        'tipo': 'funcionario',
+        'forma_contratacao': _contratoController.text.trim(),
+        'carga_horaria': _cargaController.text.trim(), 
+        'regra_escala': _cargaController.text.trim(),
+        'funcao': _cargoController.text.trim(),
+        'setor_id': idDoSetor,
+        'senha': 'Mudar@123',
+      };
+
+      final url = Uri.parse('http://10.0.2.2:5000/admin/usuarios');
 
       try {
-        final tokenLimpo = tokenJWT.trim();
-
         final resposta = await http.post(
           url,
           headers: {
@@ -92,10 +147,14 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
         );
 
         if (!mounted) return;
+        Navigator.pop(context);
 
         if (resposta.statusCode == 201 || resposta.statusCode == 200) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Funcionário cadastrado com sucesso!', textAlign: TextAlign.center), backgroundColor: Colors.green),
+            const SnackBar(
+              content: Text('Funcionário cadastrado com sucesso!', textAlign: TextAlign.center),
+              backgroundColor: Colors.green
+            ),
           );
           Navigator.pop(context, dadosFuncionario);
         } else {
@@ -106,12 +165,24 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
         }
       } catch (e) {
         if (!mounted) return;
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Falha de conexão com o servidor'), backgroundColor: Colors.red),
         );
       }
     } else {
-      Navigator.pop(context, dadosFuncionario);
+      Navigator.pop(context, {
+        'nome': _nomeController.text.trim(),
+        'email': _emailController.text.trim(),
+        'cpf': cpfLimpo,
+        'telefone': _telefoneController.text.trim(),
+        'registro_profissional': _registroController.text.trim(),
+        'forma_contratacao': _contratoController.text.trim(),
+        'carga_horaria': _cargaController.text.trim(),
+        'regra_escala': _cargaController.text.trim(),
+        'funcao': _cargoController.text.trim(),
+        'setor_nome': _setorController.text.trim(),
+      });
     }
   }
 
@@ -145,6 +216,14 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
                   child: Column(
                     children: [
                       CampoTextoCustomizado(label: 'Nome Completo', keyboardType: TextInputType.name, controller: _nomeController),
+                      const SizedBox(height: 16),
+                      
+                      CampoTextoCustomizado(
+                        label: 'E-mail institucional/pessoal', 
+                        keyboardType: TextInputType.emailAddress, 
+                        controller: _emailController,
+                        hintText: 'exemplo@hospital.com',
+                      ),
                       const SizedBox(height: 16),
                       
                       Row(
@@ -292,7 +371,6 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
                   ),
                 ),
               ),
-              
               const SizedBox(height: 12),
             ],
           ),

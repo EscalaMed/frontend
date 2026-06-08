@@ -6,7 +6,8 @@ import 'grid/pagina_cadastro_funcionarios.dart';
 import 'grid/pagina_relatorios.dart';
 
 class HomeAdmin extends StatelessWidget {
-  const HomeAdmin({super.key});
+  final String token;
+  const HomeAdmin({super.key, required this.token});
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +104,7 @@ class HomeAdmin extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const TelaRelatorios(),
+                            builder: (context) => TelaRelatorios(token: token),
                           ),
                         );
                       },

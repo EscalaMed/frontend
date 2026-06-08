@@ -20,7 +20,6 @@ class _PaginaLoginState extends State<PaginaLogin> {
   final TextEditingController _senhaController = TextEditingController();
   bool _estaCarregando = false;
 
-  // Instancia o armazenamento seguro de forma global na classe
   final _secureStorage = const FlutterSecureStorage();
 
   @override
@@ -61,10 +60,13 @@ class _PaginaLoginState extends State<PaginaLogin> {
       if (resposta.statusCode == 200) {
         debugPrint("--> Entrou no bloco de sucesso!");
 
+        String tokenExtraido = "";
+
         if (dados['access_token'] == null) {
           debugPrint(" ERRO CRÍTICO: A chave 'access_token' não existe no retorno do Flask!");
         } else {
-          await _secureStorage.write(key: 'token_jwt', value: dados['access_token'].toString());
+          tokenExtraido = dados['access_token'].toString();
+          await _secureStorage.write(key: 'token_jwt', value: tokenExtraido);
           debugPrint("--> Token JWT gravado com sucesso!");
         }
         
@@ -81,11 +83,13 @@ class _PaginaLoginState extends State<PaginaLogin> {
           debugPrint("--> User ID gravado com sucesso: $idConvertido");
         }
 
-        debugPrint("--> Pronto! Redirecionando para a HomeAdmin...");
+        debugPrint("--> Pronto! Redirecionando para a HomeAdmin enviando o Token...");
         if (mounted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const HomeAdmin()),
+            MaterialPageRoute(
+              builder: (context) => HomeAdmin(token: tokenExtraido),
+            ),
           );
         }
       } else {
@@ -100,7 +104,10 @@ class _PaginaLoginState extends State<PaginaLogin> {
       debugPrint(" PAROU NO CATCH - ERRO REAL DO LOGIN: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Falha na comunicação com o servidor', textAlign: TextAlign.center,), backgroundColor: Colors.red),
+          const SnackBar(
+            content: Text('Falha na comunicação com o servidor', textAlign: TextAlign.center,), 
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
