@@ -1,5 +1,8 @@
-// screens/pagina_troca_plantao.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../components/campo_texto.dart';
 import '../components/botoes_navegacao.dart';
 import '../components/modal_selecao.dart';
@@ -17,27 +20,103 @@ class _PaginaTrocaPlantaoState extends State<PaginaTrocaPlantao> {
 
   final _meuPlantaoCtrl      = TextEditingController();
   final _plantaoDesejadoCtrl = TextEditingController();
-  final _funcionarioCtrl     = TextEditingController();
   final _motivoCtrl          = TextEditingController();
 
   int _aba = 0;
+  bool _enviando = false;
+  List<dynamic> _meusPlantoes = [];
+  List<dynamic> _outrosPlantoes = [];
+  List<dynamic> _minhasSolicitacoesBackend = [];
 
-  final List<Map<String, String>> _solicitacoes = [
-    {'meuPlantao': '10/06 - Manhã (06h-14h)',  'plantaoDesejado': '12/06 - Tarde (14h-22h)',  'funcionario': 'Dr. Carlos Mendes', 'status': 'Pendente', 'motivo': 'Consulta médica particular'},
-    {'meuPlantao': '15/06 - Noite (22h-06h)',  'plantaoDesejado': '17/06 - Manhã (06h-14h)',  'funcionario': 'Enf. Ana Paula',    'status': 'Aceita',   'motivo': 'Compromisso familiar'},
-    {'meuPlantao': '20/06 - Tarde (14h-22h)',  'plantaoDesejado': '22/06 - Noite (22h-06h)',  'funcionario': 'Tec. Roberto Lima', 'status': 'Recusada', 'motivo': 'Viagem programada'},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _buscarMeusPlantoes();
+    _buscarOutrosPlantoes();
+    _buscarMinhasSolicitacoes();
+  }
+
+  String _formatarDataPlantao(String? iso) {
+    if (iso == null) return '';
+    final d = DateTime.tryParse(iso);
+    if (d == null) return iso;
+    return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')} às ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _buscarMeusPlantoes() async {
+    const storage = FlutterSecureStorage();
+    String? tokenJWT = await storage.read(key: 'token_jwt');
+    if (tokenJWT == null) return;
+
+    try {
+      final now = DateTime.now();
+      final url1 = Uri.parse('http://10.0.2.2:5000/api/calendario/mes?ano=${now.year}&mes=${now.month}');
+      final res1 = await http.get(url1, headers: {'Authorization': 'Bearer $tokenJWT'});
+
+      List<dynamic> plantoes = [];
+      if (res1.statusCode == 200) {
+        plantoes.addAll(jsonDecode(res1.body)['plantoes_mes'] ?? []);
+      }
+
+      int nextMonth = now.month == 12 ? 1 : now.month + 1;
+      int nextYear = now.month == 12 ? now.year + 1 : now.year;
+      final url2 = Uri.parse('http://10.0.2.2:5000/api/calendario/mes?ano=$nextYear&mes=$nextMonth');
+      final res2 = await http.get(url2, headers: {'Authorization': 'Bearer $tokenJWT'});
+
+      if (res2.statusCode == 200) {
+        plantoes.addAll(jsonDecode(res2.body)['plantoes_mes'] ?? []);
+      }
+
+      setState(() {
+        _meusPlantoes = plantoes.where((p) => p['status']?.toString().toLowerCase() == 'agendado').toList();
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _buscarOutrosPlantoes() async {
+    const storage = FlutterSecureStorage();
+    String? tokenJWT = await storage.read(key: 'token_jwt');
+    if (tokenJWT == null) return;
+
+    try {
+      final res = await http.get(Uri.parse('http://10.0.2.2:5000/plantoes'), headers: {'Authorization': 'Bearer $tokenJWT'});
+      if (res.statusCode == 200) {
+        final todos = jsonDecode(res.body) as List<dynamic>;
+        
+        final prefs = await SharedPreferences.getInstance();
+        final meuId = prefs.getInt('user_id');
+
+        setState(() {
+          _outrosPlantoes = todos.where((p) => 
+            p['status']?.toString().toLowerCase() == 'agendado' &&
+            p['medico_titular_id'] != meuId
+          ).toList();
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _buscarMinhasSolicitacoes() async {
+    const storage = FlutterSecureStorage();
+    String? tokenJWT = await storage.read(key: 'token_jwt');
+    if (tokenJWT == null) return;
+
+    try {
+      final res = await http.get(Uri.parse('http://10.0.2.2:5000/pedidos_troca/meus_pedidos'), headers: {'Authorization': 'Bearer $tokenJWT'});
+      if (res.statusCode == 200) {
+        setState(() => _minhasSolicitacoesBackend = jsonDecode(res.body));
+      }
+    } catch (_) {}
+  }
 
   @override
   void dispose() {
     _meuPlantaoCtrl.dispose();
     _plantaoDesejadoCtrl.dispose();
-    _funcionarioCtrl.dispose();
     _motivoCtrl.dispose();
     super.dispose();
   }
 
-  // ── Abre modal de seleção e atualiza controller ──────────────────
   void _selecionar(String tipo, List<String> opcoes, TextEditingController ctrl) {
     mostrarModalSelecao(
       context: context,
@@ -48,17 +127,73 @@ class _PaginaTrocaPlantaoState extends State<PaginaTrocaPlantao> {
     );
   }
 
-  // ── Modal de confirmação de envio ────────────────────────────────
+  Future<void> _enviarSolicitacaoBackend(int idPlantaoCedido, int idPlantaoDesejado) async {
+    setState(() => _enviando = true);
+    const storage = FlutterSecureStorage();
+    String? tokenJWT = await storage.read(key: 'token_jwt');
+
+    String motivoFinal = _motivoCtrl.text.isNotEmpty ? _motivoCtrl.text : "Sem motivo informado";
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:5000/plantoes/$idPlantaoCedido/solicitar_troca'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${tokenJWT!.trim()}',
+        },
+        body: jsonEncode({
+          'motivo': motivoFinal,
+          'legitimado': false,
+          'plantao_desejado_id': idPlantaoDesejado,
+        })
+      );
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Solicitação enviada com sucesso!'), backgroundColor: Colors.green));
+        _meuPlantaoCtrl.clear();
+        _plantaoDesejadoCtrl.clear();
+        _motivoCtrl.clear();
+        setState(() => _aba = 1);
+        _buscarMinhasSolicitacoes();
+      } else {
+        final erro = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(erro['msg'] ?? 'Erro ao solicitar.'), backgroundColor: Colors.red));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Falha de conexão com o servidor.'), backgroundColor: Colors.red));
+    } finally {
+      setState(() => _enviando = false);
+    }
+  }
+
   void _confirmar() {
-    if (_meuPlantaoCtrl.text.isEmpty || _plantaoDesejadoCtrl.text.isEmpty || _funcionarioCtrl.text.isEmpty) {
+    if (_meuPlantaoCtrl.text.isEmpty || _plantaoDesejadoCtrl.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('Preencha todos os campos obrigatórios.'),
+        content: const Text('Selecione "Meu Plantão" e "Plantão Desejado".'),
         backgroundColor: corAzulEscuro,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ));
       return;
     }
+
+    final plantaoCedido = _meusPlantoes.firstWhere(
+      (p) => "${_formatarDataPlantao(p['data_inicio'])} - ${p['funcao']}" == _meuPlantaoCtrl.text,
+      orElse: () => null
+    );
+
+    final plantaoDesejado = _outrosPlantoes.firstWhere(
+      (p) => "${_formatarDataPlantao(p['data_inicio'])} - ${p['funcao']}" == _plantaoDesejadoCtrl.text,
+      orElse: () => null
+    );
+
+    if (plantaoCedido == null || plantaoDesejado == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Plantão inválido. Escolha uma das opções.'), backgroundColor: Colors.redAccent));
+      return;
+    }
+
+    int idPlantaoCedido = plantaoCedido['id_plantao']; 
+    int idPlantaoDesejado = plantaoDesejado['id'];
 
     showModalBottomSheet(
       context: context,
@@ -75,30 +210,17 @@ class _PaginaTrocaPlantaoState extends State<PaginaTrocaPlantao> {
                 style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text(
-              'Trocar "${_meuPlantaoCtrl.text}" por "${_plantaoDesejadoCtrl.text}" com ${_funcionarioCtrl.text}.',
+              'Deseja ceder "${_meuPlantaoCtrl.text}" e assumir "${_plantaoDesejadoCtrl.text}"?',
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white70, fontSize: 14, height: 1.5),
             ),
             const SizedBox(height: 32),
             BotoesNavegacao(
-              textoContinuar: 'Confirmar',
+              textoContinuar: _enviando ? 'Enviando...' : 'Confirmar',
               aoVoltar: () => Navigator.pop(ctx),
-              aoContinuar: () {
+              aoContinuar: _enviando ? () {} : () async {
                 Navigator.pop(ctx);
-                setState(() {
-                  _solicitacoes.insert(0, {
-                    'meuPlantao':      _meuPlantaoCtrl.text,
-                    'plantaoDesejado': _plantaoDesejadoCtrl.text,
-                    'funcionario':     _funcionarioCtrl.text,
-                    'status':          'Pendente',
-                    'motivo':          _motivoCtrl.text.isEmpty ? 'Sem motivo informado' : _motivoCtrl.text,
-                  });
-                  _meuPlantaoCtrl.clear();
-                  _plantaoDesejadoCtrl.clear();
-                  _funcionarioCtrl.clear();
-                  _motivoCtrl.clear();
-                  _aba = 1;
-                });
+                await _enviarSolicitacaoBackend(idPlantaoCedido, idPlantaoDesejado);
               },
             ),
           ],
@@ -117,7 +239,6 @@ class _PaginaTrocaPlantaoState extends State<PaginaTrocaPlantao> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Cabeçalho
               Row(
                 children: [
                   IconButton(
@@ -134,7 +255,6 @@ class _PaginaTrocaPlantaoState extends State<PaginaTrocaPlantao> {
 
               const SizedBox(height: 24),
 
-              // Abas
               Container(
                 decoration: BoxDecoration(color: const Color(0xFFF4F6FA), borderRadius: BorderRadius.circular(10)),
                 child: Row(children: [
@@ -145,10 +265,8 @@ class _PaginaTrocaPlantaoState extends State<PaginaTrocaPlantao> {
 
               const SizedBox(height: 24),
 
-              // Conteúdo
               Expanded(child: _aba == 0 ? _Formulario(this) : _ListaSolicitacoes(this)),
 
-              // Botões só no formulário
               if (_aba == 0) ...[
                 const SizedBox(height: 16),
                 BotoesNavegacao(
@@ -167,7 +285,6 @@ class _PaginaTrocaPlantaoState extends State<PaginaTrocaPlantao> {
   }
 }
 
-// ── Aba do seletor ───────────────────────────────────────────────────
 class _Aba extends StatelessWidget {
   final String label;
   final bool ativa;
@@ -203,7 +320,6 @@ class _Aba extends StatelessWidget {
   }
 }
 
-// ── Formulário de solicitação ────────────────────────────────────────
 class _Formulario extends StatelessWidget {
   final _PaginaTrocaPlantaoState s;
   const _Formulario(this.s);
@@ -215,7 +331,6 @@ class _Formulario extends StatelessWidget {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Banner informativo
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
@@ -240,15 +355,17 @@ class _Formulario extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // Meu plantão
           GestureDetector(
-            onTap: () => s._selecionar('Plantão', ['10/06 - Manhã (06h-14h)', '11/06 - Tarde (14h-22h)', '12/06 - Noite (22h-06h)', '13/06 - Manhã (06h-14h)'], s._meuPlantaoCtrl),
-            child: AbsorbPointer(child: CampoTextoCustomizado(label: 'Meu Plantão', hintText: 'Selecione o plantão que deseja ceder', controller: s._meuPlantaoCtrl, iconeDireita: Icons.keyboard_arrow_down)),
+            onTap: () {
+              List<String> opcoes = s._meusPlantoes.map((p) => "${s._formatarDataPlantao(p['data_inicio'])} - ${p['funcao']}").toList();
+              if (opcoes.isEmpty) opcoes = ['Nenhum plantão agendado'];
+              s._selecionar('Meu Plantão', opcoes, s._meuPlantaoCtrl);
+            },
+            child: AbsorbPointer(child: CampoTextoCustomizado(label: 'Meu Plantão (Obrigatório)', hintText: 'Selecione o plantão que deseja ceder', controller: s._meuPlantaoCtrl, iconeDireita: Icons.keyboard_arrow_down)),
           ),
 
           const SizedBox(height: 16),
 
-          // Ícone de troca
           Center(
             child: Container(
               padding: const EdgeInsets.all(10),
@@ -259,18 +376,13 @@ class _Formulario extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Plantão desejado
           GestureDetector(
-            onTap: () => s._selecionar('Plantão Desejado', ['14/06 - Tarde (14h-22h)', '15/06 - Noite (22h-06h)', '16/06 - Manhã (06h-14h)', '17/06 - Tarde (14h-22h)'], s._plantaoDesejadoCtrl),
-            child: AbsorbPointer(child: CampoTextoCustomizado(label: 'Plantão Desejado', hintText: 'Selecione o plantão que deseja receber', controller: s._plantaoDesejadoCtrl, iconeDireita: Icons.keyboard_arrow_down)),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Trocar com
-          GestureDetector(
-            onTap: () => s._selecionar('Funcionário', ['Dr. Carlos Mendes', 'Enf. Ana Paula', 'Tec. Roberto Lima', 'Dra. Fernanda Costa'], s._funcionarioCtrl),
-            child: AbsorbPointer(child: CampoTextoCustomizado(label: 'Trocar com', hintText: 'Selecione o colega de trabalho', controller: s._funcionarioCtrl, iconeDireita: Icons.keyboard_arrow_down)),
+            onTap: () {
+              List<String> opcoes = s._outrosPlantoes.map((p) => "${s._formatarDataPlantao(p['data_inicio'])} - ${p['funcao']}").toList();
+              if (opcoes.isEmpty) opcoes = ['Nenhum plantão disponível no setor'];
+              s._selecionar('Plantão Desejado', opcoes, s._plantaoDesejadoCtrl);
+            },
+            child: AbsorbPointer(child: CampoTextoCustomizado(label: 'Plantão Desejado (Obrigatório)', hintText: 'Selecione o plantão para troca', controller: s._plantaoDesejadoCtrl, iconeDireita: Icons.keyboard_arrow_down)),
           ),
 
           const SizedBox(height: 16),
@@ -281,8 +393,6 @@ class _Formulario extends StatelessWidget {
     );
   }
 }
-
-// ── Lista de solicitações ────────────────────────────────────────────
 class _ListaSolicitacoes extends StatelessWidget {
   final _PaginaTrocaPlantaoState s;
   const _ListaSolicitacoes(this.s);
@@ -291,7 +401,7 @@ class _ListaSolicitacoes extends StatelessWidget {
   Widget build(BuildContext context) {
     const cor = Color.fromARGB(255, 9, 17, 131);
 
-    if (s._solicitacoes.isEmpty) {
+    if (s._minhasSolicitacoesBackend.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -306,19 +416,17 @@ class _ListaSolicitacoes extends StatelessWidget {
     }
 
     return ListView.separated(
-      itemCount: s._solicitacoes.length,
+      itemCount: s._minhasSolicitacoesBackend.length,
       separatorBuilder: (_, __) => const SizedBox(height: 16),
       itemBuilder: (_, i) {
-        final item = s._solicitacoes[i];
+        final item = s._minhasSolicitacoesBackend[i];
         return CardTroca(
-          meuPlantao:      item['meuPlantao']!,
-          plantaoDesejado: item['plantaoDesejado']!,
-          funcionario:     item['funcionario']!,
-          status:          item['status']!,
-          motivo:          item['motivo']!,
-          aoCancelar: item['status'] == 'Pendente'
-              ? () => s.setState(() => s._solicitacoes.removeAt(i))
-              : null,
+          meuPlantao:      item['meuPlantao'] ?? 'Sem data',
+          plantaoDesejado: item['plantaoDesejado'] ?? 'Aguardando',
+          funcionario:     item['funcionario'] ?? 'Pendente',
+          status:          item['status']?.toString() ?? 'Pendente',
+          motivo:          item['motivo'] ?? 'Sem motivo',
+          aoCancelar: null,
         );
       },
     );

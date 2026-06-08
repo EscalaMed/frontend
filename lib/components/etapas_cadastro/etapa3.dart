@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import '../cartao.dart';
 import 'etapa4.dart';
 import 'etapa5.dart';
+import '../../screens/home/grid/pagina_listar_funcionarios.dart';
+import '../../screens/home/grid/pagina_criar_plantao.dart';
+import '../../screens/home/grid/pagina_listar_plantoes.dart';
+import '../../screens/home/grid/pagina_listar_trocas_pendentes.dart';
 
 class Etapa3 extends StatefulWidget {
   final bool ehTelaIndependente;
@@ -44,7 +48,6 @@ class _Etapa3State extends State<Etapa3> {
 
     final faturamentoRole = widget.role?.toLowerCase() ?? '';
     
-    // Separação explícita dos booleanos de permissão
     final ehAdmin = faturamentoRole == 'administrador';
     final ehCoordenador = faturamentoRole == 'coordenador';
     final ehCoordenadorOuAdmin = ehCoordenador || ehAdmin;
@@ -66,42 +69,64 @@ class _Etapa3State extends State<Etapa3> {
             const SizedBox(height: 32),
           ],
 
-          // ── SEÇÃO DE FUNCIONALIDADES GERENCIAIS ──
-          // Aparece tanto para Coordenador quanto para Administrador
           if (ehCoordenadorOuAdmin) ...[
             CartaoOpcao(
               icone: Icons.badge_outlined,
               titulo: 'Listar Funcionários',
               subtitulo: 'Visualize e gerencie a equipe de saúde.',
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PaginaListarFuncionarios(),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
             CartaoOpcao(
               icone: Icons.calendar_month_outlined,
               titulo: 'Listar Plantões Agendados',
               subtitulo: 'Confira a escala completa dos próximos turnos.',
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PaginaListarPlantoes(),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
             CartaoOpcao(
               icone: Icons.swap_horizontal_circle_outlined,
               titulo: 'Listar Trocas Pendentes',
               subtitulo: 'Aprove ou recuse as solicitações de mudança.',
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PaginaListarTrocasPendentes(),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
             CartaoOpcao(
               icone: Icons.add_box_outlined,
               titulo: 'Criar Plantões',
               subtitulo: 'Monte novas escalas e atribua horários.',
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PaginaCriarPlantao(),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
           ],
-
-          // ── SEÇÃO DE CONFIGURAÇÃO E CADASTROS ESTRUTURAIS ──
-          // O administrador e quem não tem cargo (padrão) enxergam esses cards. 
-          // O coordenador puro é o único ocultado aqui.
           if (ehAdmin || !ehCoordenadorOuAdmin) ...[
             CartaoOpcao(
               icone: Icons.people_outline,
@@ -159,7 +184,6 @@ class _Etapa3State extends State<Etapa3> {
             const SizedBox(height: 16),
           ],
 
-          // Card de informações pessoais fixo para todos os perfis
           CartaoOpcao(
             icone: Icons.person_outline,
             titulo: 'Editar Informações',
