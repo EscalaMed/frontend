@@ -7,6 +7,8 @@ import '../components/cabecalho.dart';
 import '../components/rodape.dart';
 import '../components/campo_texto.dart';
 import 'home/adm.dart';
+import 'home/pagina_coordenador.dart'; 
+import 'home/pagina_funcionario.dart';
 
 class PaginaLogin extends StatefulWidget {
   const PaginaLogin({super.key});
@@ -27,6 +29,22 @@ class _PaginaLoginState extends State<PaginaLogin> {
     _emailController.dispose();
     _senhaController.dispose();
     super.dispose();
+  }
+
+  String? _extrairRoleDoToken(String tokenJWT) {
+    try {
+      final partes = tokenJWT.split('.');
+      if (partes.length < 2) return null;
+      
+      String payloadNormalizado = base64Url.normalize(partes[1]);
+      String payloadDecodificado = utf8.decode(base64Url.decode(payloadNormalizado));
+      
+      final Map<String, dynamic> mapaToken = jsonDecode(payloadDecodificado);
+      return mapaToken['role']?.toString().toLowerCase();
+    } catch (e) {
+      debugPrint('Erro ao extrair o role do token: $e');
+      return null;
+    }
   }
 
   Future<void> _fazerLogin() async {
@@ -64,6 +82,7 @@ class _PaginaLoginState extends State<PaginaLogin> {
 
         if (dados['access_token'] == null) {
           debugPrint(" ERRO CRÍTICO: A chave 'access_token' não existe no retorno do Flask!");
+          return;
         } else {
           tokenExtraido = dados['access_token'].toString();
           await _secureStorage.write(key: 'token_jwt', value: tokenExtraido);
@@ -83,13 +102,30 @@ class _PaginaLoginState extends State<PaginaLogin> {
           debugPrint("--> User ID gravado com sucesso: $idConvertido");
         }
 
-        debugPrint("--> Pronto! Redirecionando para a HomeAdmin enviando o Token...");
+        final role = _extrairRoleDoToken(tokenExtraido);
+        debugPrint("--> Role identificado para redirecionamento: $role");
+
         if (mounted) {
+          Widget proximaTela;
+          switch (role) {
+            case 'administrador':
+              proximaTela = HomeAdmin(token: tokenExtraido);
+              break;
+            case 'coordenador':
+              proximaTela = PaginaCoordenador(token: tokenExtraido);
+              break;
+            case 'funcionario':
+              proximaTela = PaginaFuncionario(token: tokenExtraido);
+              break;
+            default:
+              proximaTela = HomeAdmin(token: tokenExtraido);
+              break;
+          }
+
+          debugPrint("--> Redirecionando para a tela correspondente...");
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => HomeAdmin(token: tokenExtraido),
-            ),
+            MaterialPageRoute(builder: (context) => proximaTela),
           );
         }
       } else {
