@@ -1,10 +1,159 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart'; 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../components/cabecalho.dart';
 import '../components/rodape.dart';
 import '../components/campo_texto.dart';
+import 'home/adm.dart';
+import 'home/pagina_coordenador.dart'; 
+import 'home/pagina_funcionario.dart';
 
-class PaginaLogin extends StatelessWidget {
+class PaginaLogin extends StatefulWidget {
   const PaginaLogin({super.key});
+
+  @override
+  State<PaginaLogin> createState() => _PaginaLoginState();
+}
+
+class _PaginaLoginState extends State<PaginaLogin> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _senhaController = TextEditingController();
+  bool _estaCarregando = false;
+
+  final _secureStorage = const FlutterSecureStorage();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _senhaController.dispose();
+    super.dispose();
+  }
+
+  String? _extrairRoleDoToken(String tokenJWT) {
+    try {
+      final partes = tokenJWT.split('.');
+      if (partes.length < 2) return null;
+      
+      String payloadNormalizado = base64Url.normalize(partes[1]);
+      String payloadDecodificado = utf8.decode(base64Url.decode(payloadNormalizado));
+      
+      final Map<String, dynamic> mapaToken = jsonDecode(payloadDecodificado);
+      return mapaToken['role']?.toString().toLowerCase();
+    } catch (e) {
+      debugPrint('Erro ao extrair o role do token: $e');
+      return null;
+    }
+  }
+
+  Future<void> _fazerLogin() async {
+    if (_emailController.text.isEmpty || _senhaController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Preencha email e senha'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    setState(() {
+      _estaCarregando = true;
+    });
+
+    final url = Uri.parse('http://10.0.2.2:5000/login'); 
+
+    try {
+      final resposta = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailController.text.trim(),
+          'senha': _senhaController.text,
+        }),
+      );
+
+      debugPrint("--> Status Code recebido do Flask: ${resposta.statusCode}");
+      final dados = jsonDecode(resposta.body);
+      debugPrint("--> Corpo da resposta do Flask: $dados");
+
+      if (resposta.statusCode == 200) {
+        debugPrint("--> Entrou no bloco de sucesso!");
+
+        String tokenExtraido = "";
+
+        if (dados['access_token'] == null) {
+          debugPrint(" ERRO CRÍTICO: A chave 'access_token' não existe no retorno do Flask!");
+          return;
+        } else {
+          tokenExtraido = dados['access_token'].toString();
+          await _secureStorage.write(key: 'token_jwt', value: tokenExtraido);
+          debugPrint("--> Token JWT gravado com sucesso!");
+        }
+        
+        final prefs = await SharedPreferences.getInstance();
+        
+        if (dados['refresh_token'] != null) {
+          await prefs.setString('refresh_token', dados['refresh_token'].toString());
+          debugPrint("--> Refresh Token gravado!");
+        }
+        
+        if (dados['user_id'] != null) {
+          final idConvertido = int.tryParse(dados['user_id'].toString()) ?? 0;
+          await prefs.setInt('user_id', idConvertido);
+          debugPrint("--> User ID gravado com sucesso: $idConvertido");
+        }
+
+        final role = _extrairRoleDoToken(tokenExtraido);
+        debugPrint("--> Role identificado para redirecionamento: $role");
+
+        if (mounted) {
+          Widget proximaTela;
+          switch (role) {
+            case 'administrador':
+              proximaTela = HomeAdmin(token: tokenExtraido);
+              break;
+            case 'coordenador':
+              proximaTela = PaginaCoordenador(token: tokenExtraido);
+              break;
+            case 'funcionario':
+              proximaTela = PaginaFuncionario(token: tokenExtraido);
+              break;
+            default:
+              proximaTela = HomeAdmin(token: tokenExtraido);
+              break;
+          }
+
+          debugPrint("--> Redirecionando para a tela correspondente...");
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => proximaTela),
+          );
+        }
+      } else {
+        debugPrint("--> Backend retornou erro tratado (Else): ${dados['msg']}");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(dados['msg'] ?? 'Erro no login'), backgroundColor: Colors.redAccent),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint(" PAROU NO CATCH - ERRO REAL DO LOGIN: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Falha na comunicação com o servidor', textAlign: TextAlign.center,), 
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _estaCarregando = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +169,7 @@ class PaginaLogin extends StatelessWidget {
             children: [
               const Spacer(),
 
-              const CabecalhoLogo(
+              CabecalhoLogo(
                 corTexto: corAzulEscuro,
                 centralizado: true,
               ),
@@ -36,24 +185,25 @@ class PaginaLogin extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               
-              const CampoTextoCustomizado(
+              CampoTextoCustomizado(
                 label: 'E-mail',
                 keyboardType: TextInputType.emailAddress,
+                controller: _emailController, 
               ),
 
               const SizedBox(height: 16),
 
-              const CampoTextoCustomizado(
+              CampoTextoCustomizado(
                 label: 'Senha',
                 isPassword: true,
+                controller: _senhaController, 
               ),
               const SizedBox(height: 16),
 
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {
-                  },
+                  onPressed: () {},
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
                     minimumSize: Size.zero,
@@ -77,22 +227,28 @@ class PaginaLogin extends StatelessWidget {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton( 
-                  onPressed: () {
-                  },
+                  onPressed: _estaCarregando ? null : _fazerLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: corAzulEscuro,
+                    disabledBackgroundColor: Colors.grey,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
-                    'Entrar',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: _estaCarregando 
+                    ? const SizedBox(
+                        height: 24, 
+                        width: 24, 
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                      )
+                    : const Text(
+                        'Entrar',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                 ),
               ),
               

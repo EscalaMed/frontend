@@ -1,16 +1,36 @@
 import 'package:flutter/material.dart';
 import '../../components/card_destaque.dart';
 import '../../components/card_grid_menu.dart';
+import '../../components/etapas_cadastro/etapa3.dart';
 import 'grid/pagina_cadastro_funcionarios.dart';
 import 'grid/pagina_relatorios.dart';
+import 'dart:convert';
 
 class HomeAdmin extends StatelessWidget {
-  const HomeAdmin({super.key});
+  final String token;
+  const HomeAdmin({super.key, required this.token});
+
+  String? _extrairRoleDoToken(String tokenJWT) {
+    try {
+      final partes = tokenJWT.split('.');
+      if (partes.length < 2) return null;
+      
+      String payloadNormalizado = base64Url.normalize(partes[1]);
+      String payloadDecodificado = utf8.decode(base64Url.decode(payloadNormalizado));
+      
+      final Map<String, dynamic> mapaToken = jsonDecode(payloadDecodificado);
+      return mapaToken['role']?.toString();
+    } catch (e) {
+      debugPrint('Erro ao decodificar o role do JWT: $e');
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     const corAzulEscuro = Color.fromARGB(255, 9, 17, 131);
     const corFundoApp = Color(0xFFF4F6FA);
+    final String? usuarioRole = _extrairRoleDoToken(token);
 
     return Scaffold(
       backgroundColor: corFundoApp,
@@ -69,7 +89,17 @@ class HomeAdmin extends StatelessWidget {
                     CardGridMenu(
                       icone: Icons.local_hospital_outlined,
                       titulo: 'Gerenciar\nHospital',
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Etapa3(
+                              ehTelaIndependente: true,
+                              role: usuarioRole,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     CardGridMenu(
                       icone: Icons.person_add_alt_1_outlined,
@@ -78,7 +108,7 @@ class HomeAdmin extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const PaginaCadastroFuncionarios(),
+                            builder: (context) => const PaginaCadastroFuncionarios(ehTelaIndependente: true),
                           ),
                         );
                       },
@@ -95,7 +125,7 @@ class HomeAdmin extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const TelaRelatorios(),
+                            builder: (context) => TelaRelatorios(token: token),
                           ),
                         );
                       },

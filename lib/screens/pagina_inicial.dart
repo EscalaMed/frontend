@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../components/cabecalho.dart';
 import '../components/rodape.dart';
+import 'pagina_login.dart';
 
 class PaginaInicial extends StatelessWidget {
   const PaginaInicial({super.key});
@@ -55,7 +56,12 @@ class PaginaInicial extends StatelessWidget {
                   width: double.infinity,
                   height: 50,
                   child: OutlinedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PaginaLogin()),
+                      );
+                    },
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Colors.white, width: 1.5),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
