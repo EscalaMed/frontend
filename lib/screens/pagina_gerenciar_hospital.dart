@@ -1,9 +1,11 @@
 // screens/pagina_gerenciar_hospital.dart
 import 'package:flutter/material.dart';
-import '../components/campo_texto.dart';
 import '../components/botoes_navegacao.dart';
-import '../components/modal_selecao.dart';
 import '../components/cabecalho2.dart';
+import '../components/modal_selecao.dart';
+import '../components/etapas_cadastro/etapa4.dart';
+import '../components/etapas_cadastro/etapa5.dart';
+import 'home/grid/pagina_cadastro_funcionarios.dart';
 
 class PaginaGerenciarHospital extends StatefulWidget {
   const PaginaGerenciarHospital({super.key});
@@ -14,24 +16,31 @@ class PaginaGerenciarHospital extends StatefulWidget {
 class _State extends State<PaginaGerenciarHospital> {
   static const _cor = Color.fromARGB(255, 9, 17, 131);
 
-  final _nomeCtrl        = TextEditingController();
-  final _responsavelCtrl = TextEditingController();
-  final _leitosCtrl      = TextEditingController();
+  // ── Listas de pessoas já cadastradas no sistema 
+  final _coordenadores = [
+    'Dr. Carlos Mendes',
+    'Dra. Fernanda Costa',
+    'Enf. Ana Paula',
+    'Dr. Marcos Souza',
+    'Dra. Juliana Ramos',
+  ];
 
-  // Cada setor agora tem 'coordenador' separado de 'funcionarios'
+  final _funcionariosCadastrados = [
+    'Enf. Ana Paula',
+    'Tec. Roberto Lima',
+    'Dr. Marcos Souza',
+    'Dra. Fernanda Costa',
+    'Tec. Julia Rocha',
+    'Enf. Paulo Neto',
+    'Tec. Maria Silva',
+  ];
+
   final _setores = <Map<String, dynamic>>[
     {'nome':'UTI',          'coordenador':'Dr. Carlos Mendes',   'leitos':10, 'funcionarios':['Enf. Ana Paula','Tec. Roberto Lima']},
     {'nome':'Emergência',   'coordenador':'Dra. Fernanda Costa', 'leitos':20, 'funcionarios':['Dr. Marcos Souza']},
     {'nome':'Clínica Geral','coordenador':'Enf. Ana Paula',      'leitos':30, 'funcionarios':<String>[]},
     {'nome':'Pediatria',    'coordenador':'Dr. Marcos Souza',    'leitos':15, 'funcionarios':['Dra. Fernanda Costa']},
   ];
-
-  final _todosCoordenadores = ['Dr. Carlos Mendes','Dra. Fernanda Costa','Enf. Ana Paula','Dr. Marcos Souza'];
-  final _todosFuncs = ['Enf. Ana Paula','Tec. Roberto Lima','Dr. Marcos Souza','Dra. Fernanda Costa','Tec. Julia Rocha'];
-  int _aba = 0;
-
-  @override
-  void dispose() { _nomeCtrl.dispose(); _responsavelCtrl.dispose(); _leitosCtrl.dispose(); super.dispose(); }
 
   int get _totalLeitos => _setores.fold(0,(s,e) => s+(e['leitos'] as int));
   int get _totalFuncs  {
@@ -44,17 +53,8 @@ class _State extends State<PaginaGerenciarHospital> {
       content: Text(m), backgroundColor: _cor, behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))));
 
-  void _adicionar() {
-    if (_nomeCtrl.text.isEmpty) { _snack('Informe o nome do setor.'); return; }
-    setState(() {
-      _setores.add({'nome':_nomeCtrl.text,
-        'coordenador': _responsavelCtrl.text.isEmpty ? 'Não definido' : _responsavelCtrl.text,
-        'leitos': int.tryParse(_leitosCtrl.text) ?? 0,
-        'funcionarios': <String>[]});
-      _nomeCtrl.clear(); _responsavelCtrl.clear(); _leitosCtrl.clear(); _aba = 0;
-    });
-    _snack('Setor adicionado!');
-  }
+  void _navegar(Widget pagina) =>
+      Navigator.push(context, MaterialPageRoute(builder: (_) => pagina));
 
   // ── Modal editar leitos ─────────────────────────────────────────────
   void _editarLeitos(int i) {
@@ -70,8 +70,8 @@ class _State extends State<PaginaGerenciarHospital> {
           Text('Leitos – ${_setores[i]['nome']}',
               style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-          Align(alignment: Alignment.centerLeft,
-            child: const Text('Quantidade de leitos',
+          const Align(alignment: Alignment.centerLeft,
+            child: Text('Quantidade de leitos',
                 style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600))),
           const SizedBox(height: 8),
           TextField(controller: c, keyboardType: TextInputType.number,
@@ -80,8 +80,7 @@ class _State extends State<PaginaGerenciarHospital> {
             decoration: InputDecoration(
               filled: true, fillColor: Colors.white,
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-            )),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none))),
           const SizedBox(height: 20),
           BotoesNavegacao(
             aoVoltar: () => Navigator.pop(ctx), textoContinuar: 'Salvar',
@@ -92,19 +91,27 @@ class _State extends State<PaginaGerenciarHospital> {
         ])));
   }
 
-  // ── Modal vincular coordenador ──────────────────────────────────────
-  void _vincularCoordenador(int i) {
-    mostrarModalSelecao(context: context, tipo: 'Coordenador', opcoes: _todosCoordenadores,
-        aoSelecionar: (f) => setState(() => _setores[i]['coordenador'] = f));
+  // ── Alterar coordenador: mostra lista dos já cadastrados ────────────
+  void _alterarCoordenador(int i) {
+    mostrarModalSelecao(
+      context: context,
+      tipo: 'Coordenador',
+      opcoes: _coordenadores,
+      aoSelecionar: (escolha) => setState(() => _setores[i]['coordenador'] = escolha),
+    );
   }
 
-  // ── Modal vincular funcionário ──────────────────────────────────────
-  void _vincularFunc(int i) {
-    final vinc = (_setores[i]['funcionarios'] as List).cast<String>();
-    final disp = _todosFuncs.where((f) => !vinc.contains(f)).toList();
-    if (disp.isEmpty) { _snack('Todos os funcionários já vinculados.'); return; }
-    mostrarModalSelecao(context: context, tipo: 'Funcionário', opcoes: disp,
-        aoSelecionar: (f) => setState(() => (_setores[i]['funcionarios'] as List).add(f)));
+  // ── Vincular funcionário: mostra apenas os não vinculados ───────────
+  void _vincularFuncionario(int i) {
+    final vinculados = (_setores[i]['funcionarios'] as List).cast<String>();
+    final disponiveis = _funcionariosCadastrados.where((f) => !vinculados.contains(f)).toList();
+    if (disponiveis.isEmpty) { _snack('Todos os funcionários já estão vinculados.'); return; }
+    mostrarModalSelecao(
+      context: context,
+      tipo: 'Funcionário',
+      opcoes: disponiveis,
+      aoSelecionar: (escolha) => setState(() => (_setores[i]['funcionarios'] as List).add(escolha)),
+    );
   }
 
   // ── Modal excluir setor ─────────────────────────────────────────────
@@ -136,21 +143,36 @@ class _State extends State<PaginaGerenciarHospital> {
 
         const SizedBox(height: 16),
 
-        Padding(padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: _Abas(aba: _aba, rotulos: const ['Setores','Adicionar Setor'],
-              onMudar: (v) => setState(() => _aba = v))),
+        // ── Botões de ação rápida ──────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(children: [
+            Expanded(child: _BotaoAcao(
+              icone: Icons.person_add_alt_1_outlined,
+              label: 'Add Funcionário',
+              onTap: () => _navegar(const PaginaCadastroFuncionarios()),
+            )),
+            const SizedBox(width: 12),
+            Expanded(child: _BotaoAcao(
+              icone: Icons.manage_accounts_outlined,
+              label: 'Add Coordenador',
+              onTap: () => _navegar(const TelaCoordenador()),
+            )),
+            const SizedBox(width: 12),
+            Expanded(child: _BotaoAcao(
+              icone: Icons.add_business_outlined,
+              label: 'Add Setor',
+              onTap: () => _navegar(const TelaSetores()),
+            )),
+          ]),
+        ),
 
         const SizedBox(height: 16),
 
         Expanded(child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: _aba == 0 ? _buildLista() : SingleChildScrollView(child: _buildForm()),
+          child: _buildLista(),
         )),
-
-        if (_aba == 1) Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-          child: BotoesNavegacao(textoContinuar: 'Adicionar',
-              aoVoltar: () => setState(() => _aba = 0), aoContinuar: _adicionar)),
       ])),
     );
   }
@@ -165,20 +187,38 @@ class _State extends State<PaginaGerenciarHospital> {
       itemCount: _setores.length, separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (_, i) => _CardSetor(
         setor: _setores[i],
-        onLeitos:     () => _editarLeitos(i),
-        onCoordenador: () => _vincularCoordenador(i),
-        onVincular:   () => _vincularFunc(i),
+        onLeitos:      () => _editarLeitos(i),
+        onCoordenador: () => _alterarCoordenador(i),
+        onVincular:    () => _vincularFuncionario(i),
         onDesvincular: (f) => setState(() => (_setores[i]['funcionarios'] as List).remove(f)),
-        onExcluir:    () => _excluir(i)));
+        onExcluir:     () => _excluir(i)));
   }
+}
 
-  Widget _buildForm() => Column(children: [
-    CampoTextoCustomizado(label: 'Nome do Setor',        hintText: 'Ex: UTI, Emergência...', controller: _nomeCtrl),
-    const SizedBox(height: 16),
-    CampoTextoCustomizado(label: 'Coordenador',          hintText: 'Nome do coordenador',   controller: _responsavelCtrl, keyboardType: TextInputType.name),
-    const SizedBox(height: 16),
-    CampoTextoCustomizado(label: 'Capacidade de Leitos', hintText: 'Número de leitos',       controller: _leitosCtrl, keyboardType: TextInputType.number),
-  ]);
+// ── Botão de ação rápida ───────────────────────────────────────────────
+class _BotaoAcao extends StatelessWidget {
+  final IconData icone;
+  final String label;
+  final VoidCallback onTap;
+  const _BotaoAcao({required this.icone, required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    const cor = Color.fromARGB(255, 9, 17, 131);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(color: cor, borderRadius: BorderRadius.circular(10)),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Icon(icone, color: Colors.white, size: 22),
+          const SizedBox(height: 6),
+          Text(label, textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+        ]),
+      ),
+    );
+  }
 }
 
 // ── Card de setor expandível ───────────────────────────────────────────
@@ -204,7 +244,6 @@ class _CardSetorState extends State<_CardSetor> {
           border: Border.all(color: const Color(0xFFB0B5D9), width: 1.5),
           borderRadius: BorderRadius.circular(12)),
       child: Column(children: [
-        // Linha principal
         InkWell(onTap: () => setState(() => _exp = !_exp), borderRadius: BorderRadius.circular(12),
           child: Padding(padding: const EdgeInsets.all(14), child: Row(children: [
             Container(padding: const EdgeInsets.all(8),
@@ -217,7 +256,6 @@ class _CardSetorState extends State<_CardSetor> {
               Text(widget.setor['coordenador'],
                   style: const TextStyle(fontSize: 12, color: Color(0xFF8A94C9))),
             ])),
-            // Badge de leitos — clique abre edição
             GestureDetector(onTap: widget.onLeitos,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -233,13 +271,11 @@ class _CardSetorState extends State<_CardSetor> {
             Icon(_exp ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: cor, size: 20),
           ]))),
 
-        // Área expandida
         if (_exp) ...[
           const Divider(height: 1, color: Color(0xFFE0E4F0)),
           Padding(padding: const EdgeInsets.fromLTRB(14, 12, 14, 14), child: Column(
             crossAxisAlignment: CrossAxisAlignment.start, children: [
 
-              // ── Coordenador ─────────────────────────────────────
               _SecaoTitulo(titulo: 'Coordenador', botaoLabel: 'Alterar',
                   icone: Icons.manage_accounts_outlined, onTap: widget.onCoordenador),
               const SizedBox(height: 8),
@@ -254,7 +290,6 @@ class _CardSetorState extends State<_CardSetor> {
               const Divider(height: 1, color: Color(0xFFE0E4F0)),
               const SizedBox(height: 14),
 
-              // ── Funcionários ─────────────────────────────────────
               _SecaoTitulo(titulo: 'Funcionários (${funcs.length})',
                   botaoLabel: 'Vincular', icone: Icons.person_add_alt_1_outlined,
                   onTap: widget.onVincular),
@@ -289,7 +324,6 @@ class _CardSetorState extends State<_CardSetor> {
   }
 }
 
-// ── Cabeçalho de seção com botão de ação ──────────────────────────────
 class _SecaoTitulo extends StatelessWidget {
   final String titulo, botaoLabel;
   final IconData icone;
@@ -310,28 +344,5 @@ class _SecaoTitulo extends StatelessWidget {
             Text(botaoLabel, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
           ]))),
     ]);
-  }
-}
-
-// ── Abas ──────────────────────────────────────────────────────────────
-class _Abas extends StatelessWidget {
-  final int aba; final List<String> rotulos; final void Function(int) onMudar;
-  const _Abas({required this.aba, required this.rotulos, required this.onMudar});
-
-  @override
-  Widget build(BuildContext context) {
-    const cor = Color.fromARGB(255, 9, 17, 131);
-    return Container(
-      decoration: BoxDecoration(color: const Color(0xFFF4F6FA), borderRadius: BorderRadius.circular(10)),
-      child: Row(children: List.generate(rotulos.length, (i) => Expanded(
-        child: GestureDetector(onTap: () => onMudar(i),
-          child: AnimatedContainer(duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-                color: aba==i ? cor : Colors.transparent, borderRadius: BorderRadius.circular(10)),
-            alignment: Alignment.center,
-            child: Text(rotulos[i], style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
-                color: aba==i ? Colors.white : cor))))))),
-    );
   }
 }

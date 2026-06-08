@@ -1,6 +1,10 @@
 // screens/pagina_coordenador.dart
 import 'package:flutter/material.dart';
 import '../components/card_grid_menu.dart';
+import 'pagina_escalas.dart';
+import 'pagina_troca_plantao.dart';
+import 'pagina_gerenciar_hospital.dart';
+import 'pagina_configuracoes.dart';
 
 class PaginaCoordenador extends StatefulWidget {
   final String nomeUsuario;
@@ -21,19 +25,10 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
   static const _vibrante = Color(0xFF3948F5);
   static const _fundo    = Color(0xFFF4F6FA);
 
-  // Trocas pendentes de aprovação do coordenador
   final _trocas = <Map<String, String>>[
-    {'nome':'Enf. Ana Paula',    'de':'10/06 Manhã',  'para':'12/06 Tarde',  'motivo':'Consulta médica', 'tempo':'há 2h'},
-    {'nome':'Tec. Roberto Lima', 'de':'15/06 Noite',  'para':'17/06 Manhã',  'motivo':'Compromisso familiar', 'tempo':'há 5h'},
-    {'nome':'Enf. Julia Rocha',  'de':'18/06 Tarde',  'para':'20/06 Manhã',  'motivo':'Viagem programada', 'tempo':'há 1d'},
-  ];
-
-  // Equipe do setor
-  final _equipe = <Map<String, String>>[
-    {'nome':'Enf. Ana Paula',    'cargo':'Enfermeira',   'turno':'Manhã'},
-    {'nome':'Tec. Roberto Lima', 'cargo':'Técnico',      'turno':'Noite'},
-    {'nome':'Enf. Julia Rocha',  'cargo':'Enfermeira',   'turno':'Tarde'},
-    {'nome':'Tec. Paulo Neto',   'cargo':'Técnico',      'turno':'Manhã'},
+    {'nome':'Enf. Ana Paula',    'de':'10/06 Manhã',  'para':'12/06 Tarde',  'motivo':'Consulta médica',     'tempo':'há 2h'},
+    {'nome':'Tec. Roberto Lima', 'de':'15/06 Noite',  'para':'17/06 Manhã',  'motivo':'Compromisso familiar','tempo':'há 5h'},
+    {'nome':'Enf. Julia Rocha',  'de':'18/06 Tarde',  'para':'20/06 Manhã',  'motivo':'Viagem programada',   'tempo':'há 1d'},
   ];
 
   void _responderTroca(int i, bool aceitar) {
@@ -45,6 +40,9 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))));
   }
 
+  void _navegar(Widget pagina) =>
+      Navigator.push(context, MaterialPageRoute(builder: (_) => pagina));
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,7 +51,7 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 
-          // ── Cabeçalho 
+          // ── Cabeçalho ─────────────────────────────────────────────
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Olá, ${widget.nomeUsuario.split(' ').first}',
@@ -76,7 +74,7 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
 
           const SizedBox(height: 24),
 
-          // ── Card do setor 
+          // ── Card do setor ──────────────────────────────────────────
           Container(width: double.infinity, padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: const LinearGradient(colors: [_cor, _vibrante],
@@ -91,7 +89,6 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
                   style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                _Mini('${_equipe.length}', 'Funcionários'),
                 _Mini('10',               'Leitos'),
                 _Mini('${_trocas.length}','Pendentes'),
               ]),
@@ -99,7 +96,7 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
 
           const SizedBox(height: 24),
 
-          // ── Solicitações de troca 
+          // ── Solicitações de troca ──────────────────────────────────
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text('Trocas Pendentes (${_trocas.length})',
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _cor)),
@@ -126,18 +123,7 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
 
           const SizedBox(height: 24),
 
-          // ── Minha Equipe 
-          const Text('Minha Equipe',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _cor)),
-          const SizedBox(height: 12),
-
-          ...List.generate(_equipe.length, (i) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: _CardFuncionario(func: _equipe[i]))),
-
-          const SizedBox(height: 24),
-
-          // ── Ações Rápidas 
+          // ── Ações Rápidas ──────────────────────────────────────────
           const Text('Ações Rápidas',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _cor)),
           const SizedBox(height: 16),
@@ -147,10 +133,21 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2, mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: 1.1,
             children: [
-              CardGridMenu(icone: Icons.calendar_month_outlined, titulo: 'Escalas e\nTurnos',  onTap: () {}),
-              CardGridMenu(icone: Icons.swap_horiz_outlined,     titulo: 'Trocas de\nPlantão', onTap: () {}),
-              CardGridMenu(icone: Icons.people_outline,          titulo: 'Minha\nEquipe',       onTap: () {}),
-              CardGridMenu(icone: Icons.settings_outlined,       titulo: 'Configurações',       onTap: () {}),
+              CardGridMenu(
+                icone: Icons.calendar_month_outlined,
+                titulo: 'Escalas e\nTurnos',
+                onTap: () => _navegar(const PaginaEscalas()),
+              ),
+              CardGridMenu(
+                icone: Icons.people_outline,
+                titulo: 'Minha\nEquipe',
+                onTap: () => _navegar(const PaginaGerenciarHospital()),
+              ),
+              CardGridMenu(
+                icone: Icons.settings_outlined,
+                titulo: 'Configurações',
+                onTap: () => _navegar(const PaginaConfiguracoes()),
+              ),
             ],
           ),
 
@@ -171,7 +168,6 @@ class _Mini extends StatelessWidget {
   ]);
 }
 
-// ── Card de solicitação de troca 
 class _CardTroca extends StatelessWidget {
   final Map<String, String> troca;
   final VoidCallback onAceitar, onRecusar;
@@ -196,15 +192,14 @@ class _CardTroca extends StatelessWidget {
           ])),
         ]),
         const SizedBox(height: 10),
-        // Detalhe da troca
         Container(width: double.infinity, padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(color: const Color(0xFFF4F6FA), borderRadius: BorderRadius.circular(8)),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            _LinhaTroca(icone: Icons.arrow_upward_outlined,   cor: const Color(0xFFC62828), label: 'Cede',    valor: troca['de']!),
+            _LinhaTroca(icone: Icons.arrow_upward_outlined,   cor: const Color(0xFFC62828), label: 'Cede',   valor: troca['de']!),
             const SizedBox(height: 4),
-            _LinhaTroca(icone: Icons.arrow_downward_outlined, cor: const Color(0xFF2E7D32), label: 'Recebe',  valor: troca['para']!),
+            _LinhaTroca(icone: Icons.arrow_downward_outlined, cor: const Color(0xFF2E7D32), label: 'Recebe', valor: troca['para']!),
             const SizedBox(height: 4),
-            _LinhaTroca(icone: Icons.notes_outlined,          cor: cor,                    label: 'Motivo',  valor: troca['motivo']!),
+            _LinhaTroca(icone: Icons.notes_outlined,          cor: cor,                    label: 'Motivo', valor: troca['motivo']!),
           ])),
         const SizedBox(height: 10),
         Row(children: [
@@ -238,33 +233,4 @@ class _LinhaTroca extends StatelessWidget {
     Text('$label: ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: cor)),
     Text(valor, style: const TextStyle(fontSize: 12, color: Color.fromARGB(255, 9, 17, 131))),
   ]);
-}
-
-// ── Card de funcionário da equipe 
-class _CardFuncionario extends StatelessWidget {
-  final Map<String, String> func;
-  const _CardFuncionario({required this.func});
-
-  @override
-  Widget build(BuildContext context) {
-    const cor = Color.fromARGB(255, 9, 17, 131);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(color: Colors.white,
-          border: Border.all(color: const Color(0xFFB0B5D9), width: 1.5),
-          borderRadius: BorderRadius.circular(12)),
-      child: Row(children: [
-        const CircleAvatar(radius: 20, backgroundColor: Color(0xFFF4F6FA),
-            child: Icon(Icons.person_outline, color: cor, size: 22)),
-        const SizedBox(width: 12),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(func['nome']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cor)),
-          Text(func['cargo']!, style: const TextStyle(fontSize: 12, color: Color(0xFF8A94C9))),
-        ])),
-        Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(color: cor.withOpacity(0.08), borderRadius: BorderRadius.circular(20)),
-          child: Text(func['turno']!, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: cor))),
-      ]),
-    );
-  }
 }

@@ -1,6 +1,8 @@
 // screens/pagina_funcionario.dart
 import 'package:flutter/material.dart';
 import '../components/card_grid_menu.dart';
+import 'pagina_troca_plantao.dart';
+import 'pagina_configuracoes.dart';
 
 class PaginaFuncionario extends StatelessWidget {
   final String nomeUsuario;
@@ -16,19 +18,21 @@ class PaginaFuncionario extends StatelessWidget {
   static const _vibrante = Color(0xFF3948F5);
   static const _fundo    = Color(0xFFF4F6FA);
 
+  void _navegar(BuildContext context, Widget pagina) =>
+      Navigator.push(context, MaterialPageRoute(builder: (_) => pagina));
+
   @override
   Widget build(BuildContext context) {
     final plantoesSemana = [
-      _Item('Seg','09/06','Folga',  '–',           _Turno.folga),
-      _Item('Ter','10/06','Manhã',  setor,          _Turno.manha),
-      _Item('Qua','11/06','Manhã',  setor,          _Turno.manha),
-      _Item('Qui','12/06','Folga',  '–',           _Turno.folga),
-      _Item('Sex','13/06','Noite',  'Emergência',   _Turno.noite),
+      _Item('Seg','09/06','Folga',  '–',          _Turno.folga),
+      _Item('Ter','10/06','Manhã',  setor,         _Turno.manha),
+      _Item('Qua','11/06','Manhã',  setor,         _Turno.manha),
+      _Item('Qui','12/06','Folga',  '–',          _Turno.folga),
+      _Item('Sex','13/06','Noite',  'Emergência',  _Turno.noite),
     ];
 
     return Scaffold(
       backgroundColor: _fundo,
-      // ── SingleChildScrollView garante que tudo role ──────────────
       body: SafeArea(child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -39,10 +43,13 @@ class PaginaFuncionario extends StatelessWidget {
               Text('Olá, ${nomeUsuario.split(' ').last}',
                   style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: _cor)),
               const SizedBox(height: 4),
-              Text('Setor: $setor', style: const TextStyle(fontSize: 14, color: Colors.grey)),
+              Text('Setor: $setor',
+                  style: const TextStyle(fontSize: 14, color: Colors.grey)),
             ])),
-            IconButton(onPressed: () {}, icon: const Badge(label: Text('1'),
-                child: Icon(Icons.notifications_none_outlined, color: _cor, size: 28))),
+            IconButton(
+              onPressed: () {},
+              icon: const Badge(label: Text('1'),
+                  child: Icon(Icons.notifications_none_outlined, color: _cor, size: 28))),
           ]),
 
           const SizedBox(height: 24),
@@ -62,7 +69,7 @@ class PaginaFuncionario extends StatelessWidget {
                   style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
               Row(children: [
-                _Chip(icone: Icons.domain_outlined,         texto: setor),
+                _Chip(icone: Icons.domain_outlined,          texto: setor),
                 const SizedBox(width: 16),
                 const _Chip(icone: Icons.access_time_outlined,    texto: '8h'),
                 const SizedBox(width: 16),
@@ -76,18 +83,20 @@ class PaginaFuncionario extends StatelessWidget {
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             const Text('Esta Semana',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _cor)),
-            GestureDetector(onTap: () {},
+            GestureDetector(
+              onTap: () {},
               child: const Text('Ver calendário',
                   style: TextStyle(fontSize: 13, color: _vibrante, fontWeight: FontWeight.bold))),
           ]),
           const SizedBox(height: 12),
 
           ...plantoesSemana.map((item) => Padding(
-              padding: const EdgeInsets.only(bottom: 8), child: _CardDia(item: item))),
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _CardDia(item: item))),
 
           const SizedBox(height: 24),
 
-          // ── Ações Rápidas ──────────────────────────────────────────
+          // ── Ações Rápidas (apenas 2 cards) ────────────────────────
           const Text('Ações Rápidas',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _cor)),
           const SizedBox(height: 16),
@@ -97,10 +106,16 @@ class PaginaFuncionario extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2, mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: 1.1,
             children: [
-              CardGridMenu(icone: Icons.calendar_month_outlined, titulo: 'Minhas\nEscalas',       onTap: () {}),
-              CardGridMenu(icone: Icons.swap_horiz_outlined,     titulo: 'Trocar\nPlantão',        onTap: () {}),
-              CardGridMenu(icone: Icons.history_outlined,        titulo: 'Histórico\nde Plantões', onTap: () {}),
-              CardGridMenu(icone: Icons.settings_outlined,       titulo: 'Configurações',           onTap: () {}),
+              CardGridMenu(
+                icone: Icons.swap_horiz_outlined,
+                titulo: 'Trocar\nPlantão',
+                onTap: () => _navegar(context, const PaginaTrocaPlantao()),
+              ),
+              CardGridMenu(
+                icone: Icons.settings_outlined,
+                titulo: 'Configurações',
+                onTap: () => _navegar(context, const PaginaConfiguracoes()),
+              ),
             ],
           ),
 
