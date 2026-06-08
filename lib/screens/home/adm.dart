@@ -86,7 +86,7 @@ class HomeAdmin extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const PaginaCadastroFuncionarios(),
+                            builder: (context) => const PaginaCadastroFuncionarios(ehTelaIndependente: true),
                           ),
                         );
                       },

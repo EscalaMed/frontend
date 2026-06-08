@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../../../components/campo_texto.dart';
 import '../../../components/modal_selecao.dart';
 
 class PaginaCadastroFuncionarios extends StatefulWidget {
-  const PaginaCadastroFuncionarios({super.key});
+  final bool ehTelaIndependente;
+  const PaginaCadastroFuncionarios({super.key, this.ehTelaIndependente = false});
 
   @override
   State<PaginaCadastroFuncionarios> createState() => _PaginaCadastroFuncionariosState();
@@ -38,24 +42,77 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
     super.dispose();
   }
 
-  void _concluirCadastro() {
+  Future<void> _concluirCadastro() async {
     if (_nomeController.text.trim().isEmpty || _cpfController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, preencha o nome e CPF.'), backgroundColor: Colors.redAccent),
       );
       return;
     }
+    final cpfLimpo = _cpfController.text.replaceAll(RegExp(r'[^0-9]'), '').trim();
+    
     final dadosFuncionario = {
       'nome': _nomeController.text.trim(),
-      'cpf': _cpfController.text.trim(),
+      'cpf': cpfLimpo,
       'telefone': _telefoneController.text.trim(),
       'registro': _registroController.text.trim(),
       'cargo': _cargoController.text.trim(),
       'setor': _setorController.text.trim(),
       'contrato': _contratoController.text.trim(),
       'carga_horaria': _cargaController.text.trim(),
+      'email': '${_nomeController.text.trim().toLowerCase().replaceAll(' ', '')}@hospital.com', 
+      'senha': 'Mudar@123}',
+      'tipo': 'funcionario',
     };
-    Navigator.pop(context, dadosFuncionario);
+
+    if (widget.ehTelaIndependente) {
+      const storage = FlutterSecureStorage();
+      String? tokenJWT = await storage.read(key: 'token_jwt');
+
+      if (tokenJWT == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sessão expirada. Faça login novamente.'), backgroundColor: Colors.orangeAccent),
+        );
+        return;
+      }
+
+      final url = Uri.parse('http://10.0.2.2:5000/admin/funcionarios');
+
+      try {
+        final tokenLimpo = tokenJWT.trim();
+
+        final resposta = await http.post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $tokenLimpo',
+          },
+          body: jsonEncode(dadosFuncionario),
+        );
+
+        if (!mounted) return;
+
+        if (resposta.statusCode == 201 || resposta.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Funcionário cadastrado com sucesso!', textAlign: TextAlign.center), backgroundColor: Colors.green),
+          );
+          Navigator.pop(context, dadosFuncionario);
+        } else {
+          final erro = jsonDecode(resposta.body);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(erro['msg'] ?? 'Erro ao cadastrar funcionário'), backgroundColor: Colors.redAccent),
+          );
+        }
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Falha de conexão com o servidor'), backgroundColor: Colors.red),
+        );
+      }
+    } else {
+      Navigator.pop(context, dadosFuncionario);
+    }
   }
 
   @override
