@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; 
 import '../../components/barra_progresso.dart';
 import '../../components/campo_texto.dart';
 import '../../components/modal_selecao.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class TelaCoordenador extends StatefulWidget {
   final bool ehTelaIndependente;
@@ -40,7 +43,7 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
     super.dispose();
   }
 
-  void _concluirEVoltar() {
+  Future<void> _concluirEVoltar() async {
     if (_nomeController.text.trim().isEmpty ||
         _cpfController.text.trim().isEmpty ||
         _emailController.text.trim().isEmpty ||
@@ -57,17 +60,64 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
       return;
     }
 
-    final dados = {
+    final dadosCoordenador = {
       'nome': _nomeController.text.trim(),
-      'cpf': _cpfController.text.trim(),
       'email': _emailController.text.trim(),
+      'cpf': _cpfController.text.trim(),
+      'senha': 'Mudar@123', 
       'telefone': _telefoneController.text.trim(),
       'registro': _registroController.text.trim(),
       'cargo': _cargoController.text.trim(),
       'contrato': _contratoController.text.trim(),
     };
 
-    Navigator.pop(context, dados);
+    if (widget.ehTelaIndependente) {
+      const storage = FlutterSecureStorage();
+      String? tokenJWT = await storage.read(key: 'token_jwt');
+
+      if (tokenJWT == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sessão expirada. Faça login novamente.'), backgroundColor: Colors.orangeAccent),
+        );
+        return;
+      }
+
+      final url = Uri.parse('http://10.0.2.2:5000/coordenadores');
+
+      try {
+        final tokenLimpo = tokenJWT.trim();
+
+        final resposta = await http.post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $tokenLimpo', 
+          },
+          body: jsonEncode(dadosCoordenador),
+        );
+
+        if (!mounted) return;
+
+        if (resposta.statusCode == 201 || resposta.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Coordenador cadastrado com sucesso!', textAlign: TextAlign.center), backgroundColor: Colors.green),
+          );
+          Navigator.pop(context, dadosCoordenador);
+        } else {
+          final erro = jsonDecode(resposta.body);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(erro['msg'] ?? 'Erro ao cadastrar coordenador'), backgroundColor: Colors.redAccent),
+          );
+        }
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Falha de conexão com o servidor'), backgroundColor: Colors.red),
+        );
+      }
+    } else {
+      Navigator.pop(context, dadosCoordenador);
+    }
   }
 
   @override

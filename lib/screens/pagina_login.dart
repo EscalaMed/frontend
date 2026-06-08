@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart'; 
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../components/cabecalho.dart';
 import '../components/rodape.dart';
 import '../components/campo_texto.dart';
@@ -19,6 +19,9 @@ class _PaginaLoginState extends State<PaginaLogin> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
   bool _estaCarregando = false;
+
+  // Instancia o armazenamento seguro de forma global na classe
+  final _secureStorage = const FlutterSecureStorage();
 
   @override
   void dispose() {
@@ -51,19 +54,34 @@ class _PaginaLoginState extends State<PaginaLogin> {
         }),
       );
 
+      debugPrint("--> Status Code recebido do Flask: ${resposta.statusCode}");
       final dados = jsonDecode(resposta.body);
+      debugPrint("--> Corpo da resposta do Flask: $dados");
 
       if (resposta.statusCode == 200) {
+        debugPrint("--> Entrou no bloco de sucesso!");
+
+        if (dados['access_token'] == null) {
+          debugPrint(" ERRO CRÍTICO: A chave 'access_token' não existe no retorno do Flask!");
+        } else {
+          await _secureStorage.write(key: 'token_jwt', value: dados['access_token'].toString());
+          debugPrint("--> Token JWT gravado com sucesso!");
+        }
+        
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('access_token', dados['access_token']);
         
         if (dados['refresh_token'] != null) {
-          await prefs.setString('refresh_token', dados['refresh_token']);
+          await prefs.setString('refresh_token', dados['refresh_token'].toString());
+          debugPrint("--> Refresh Token gravado!");
         }
+        
         if (dados['user_id'] != null) {
-          await prefs.setInt('user_id', dados['user_id']);
+          final idConvertido = int.tryParse(dados['user_id'].toString()) ?? 0;
+          await prefs.setInt('user_id', idConvertido);
+          debugPrint("--> User ID gravado com sucesso: $idConvertido");
         }
 
+        debugPrint("--> Pronto! Redirecionando para a HomeAdmin...");
         if (mounted) {
           Navigator.pushReplacement(
             context,
@@ -71,6 +89,7 @@ class _PaginaLoginState extends State<PaginaLogin> {
           );
         }
       } else {
+        debugPrint("--> Backend retornou erro tratado (Else): ${dados['msg']}");
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(dados['msg'] ?? 'Erro no login'), backgroundColor: Colors.redAccent),
@@ -78,6 +97,7 @@ class _PaginaLoginState extends State<PaginaLogin> {
         }
       }
     } catch (e) {
+      debugPrint(" PAROU NO CATCH - ERRO REAL DO LOGIN: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Falha na comunicação com o servidor', textAlign: TextAlign.center,), backgroundColor: Colors.red),
@@ -106,7 +126,7 @@ class _PaginaLoginState extends State<PaginaLogin> {
             children: [
               const Spacer(),
 
-              const CabecalhoLogo(
+              CabecalhoLogo(
                 corTexto: corAzulEscuro,
                 centralizado: true,
               ),

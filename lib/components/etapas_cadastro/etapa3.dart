@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../cartao.dart';
 import 'etapa4.dart';
-import 'etapa5.dart'; 
+import 'etapa5.dart';
 
-class Etapa3 extends StatelessWidget {
+class Etapa3 extends StatefulWidget {
   final bool ehTelaIndependente;
   final double progressoAtual;
   final List<Map<String, String>>? coordenadoresCadastrados;
@@ -22,16 +22,30 @@ class Etapa3 extends StatelessWidget {
   });
 
   @override
+  State<Etapa3> createState() => _Etapa3State();
+}
+
+class _Etapa3State extends State<Etapa3> {
+  final List<Map<String, String>> _coordenadoresLocais = [];
+  final List<Map<String, String>> _setoresLocais = [];
+
+  List<Map<String, String>> get _coordenadores => 
+      widget.ehTelaIndependente ? _coordenadoresLocais : (widget.coordenadoresCadastrados ?? []);
+
+  List<Map<String, String>> get _setores => 
+      widget.ehTelaIndependente ? _setoresLocais : (widget.setoresCadastrados ?? []);
+
+  @override
   Widget build(BuildContext context) {
     const corAzulEscuro = Color.fromARGB(255, 9, 17, 131);
     const corFundoApp = Color(0xFFF4F6FA);
 
     Widget conteudoVisual = SingleChildScrollView(
-      padding: EdgeInsets.only(top: ehTelaIndependente ? 30.0 : 0.0),
+      padding: EdgeInsets.only(top: widget.ehTelaIndependente ? 30.0 : 0.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (!ehTelaIndependente) ...[
+          if (!widget.ehTelaIndependente) ...[
             const Text(
               'Gerenciar Hospital',
               style: TextStyle(
@@ -42,42 +56,58 @@ class Etapa3 extends StatelessWidget {
             ),
             const SizedBox(height: 32),
           ],
+
           CartaoOpcao(
             icone: Icons.people_outline,
-            titulo: 'Coordenador ${(coordenadoresCadastrados?.isNotEmpty ?? false) ? "(${coordenadoresCadastrados!.length})" : ""}',
+            titulo: 'Coordenador ${_coordenadores.isNotEmpty ? "(${_coordenadores.length})" : ""}',
             subtitulo: 'Adicione coordenadores.',
             onTap: () async {
               final resultado = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => TelaCoordenador(
-                    ehTelaIndependente: ehTelaIndependente,
-                    progressoAtual: progressoAtual,
+                    ehTelaIndependente: widget.ehTelaIndependente,
+                    progressoAtual: widget.progressoAtual,
                   ),
                 ),
               );
-              if (resultado != null && aoAdicionarCoordenador != null) {
-                aoAdicionarCoordenador!(Map<String, String>.from(resultado));
+
+              if (resultado != null && resultado is Map<String, String>) {
+                if (widget.ehTelaIndependente) {
+                  setState(() {
+                    _coordenadoresLocais.add(resultado);
+                  });
+                } else {
+                  widget.aoAdicionarCoordenador?.call(resultado);
+                }
               }
             },
           ),
           const SizedBox(height: 16),
+
           CartaoOpcao(
             icone: Icons.grid_view_outlined,
-            titulo: 'Setores ${(setoresCadastrados?.isNotEmpty ?? false) ? "(${setoresCadastrados!.length})" : ""}',
+            titulo: 'Setores ${_setores.isNotEmpty ? "(${_setores.length})" : ""}',
             subtitulo: 'Defina setores e atribua coordenadores.',
             onTap: () async {
               final resultado = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => TelaSetores(
-                    ehTelaIndependente: ehTelaIndependente,
-                    progressoAtual: progressoAtual,
+                    ehTelaIndependente: widget.ehTelaIndependente,
+                    progressoAtual: widget.progressoAtual,
                   ),
                 ),
               );
-              if (resultado != null && aoAdicionarSetor != null) {
-                aoAdicionarSetor!(Map<String, String>.from(resultado));
+
+              if (resultado != null && resultado is Map<String, String>) {
+                if (widget.ehTelaIndependente) {
+                  setState(() {
+                    _setoresLocais.add(resultado);
+                  });
+                } else {
+                  widget.aoAdicionarSetor?.call(resultado);
+                }
               }
             },
           ),
@@ -95,11 +125,46 @@ class Etapa3 extends StatelessWidget {
             onTap: () {},
           ),
           const SizedBox(height: 24),
+
+          if (widget.ehTelaIndependente)
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: corAzulEscuro,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  if (_coordenadoresLocais.isEmpty && _setoresLocais.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Nenhuma alteração detectada para salvar.', textAlign: TextAlign.center),
+                        backgroundColor: Colors.orangeAccent,
+                      ),
+                    );
+                    return;
+                  }
+                  
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Configurações do hospital atualizadas com sucesso!', textAlign: TextAlign.center),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  'Salvar Alterações',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
         ],
       ),
     );
 
-    if (ehTelaIndependente) {
+    if (widget.ehTelaIndependente) {
       return Scaffold(
         backgroundColor: corFundoApp,
         appBar: AppBar(
