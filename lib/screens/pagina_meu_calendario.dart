@@ -5,9 +5,9 @@ import 'package:http/http.dart' as http;
 import '../components/cabecalho2.dart';
 import 'pagina_troca_plantao.dart';
 
-// ── Modelo de plantão vindo do back-end (Agora 100% Blindado) ───────
+//
 class _PlantaoItem {
-  final int id;
+  final int    id;
   final DateTime dataInicio;
   final DateTime dataFim;
   final String funcao;
@@ -21,22 +21,13 @@ class _PlantaoItem {
     required this.status,
   });
 
-  factory _PlantaoItem.fromJson(Map<String, dynamic> j) {
-    // Conversão de data ultra segura (sem alterar o fuso horário que quebra os dias)
-    final dataIn = DateTime.tryParse(j['data_inicio']?.toString() ?? '') ?? DateTime.now();
-    final dataOut = j['data_fim'] != null 
-        ? DateTime.tryParse(j['data_fim'].toString()) ?? dataIn
-        : dataIn;
-
-    return _PlantaoItem(
-      // tryParse garante que não vai quebrar se o ID vier como String ou faltar
-      id:         int.tryParse(j['id']?.toString() ?? '0') ?? 0, 
-      dataInicio: dataIn,
-      dataFim:    dataOut,
-      funcao:     j['funcao']?.toString() ?? 'Plantão',
-      status:     j['status']?.toString() ?? 'agendado',
-    );
-  }
+  factory _PlantaoItem.fromJson(Map<String, dynamic> j) => _PlantaoItem(
+    id:         j['id_plantao'] as int,
+    dataInicio: DateTime.parse(j['data_inicio'] as String),
+    dataFim:    j['data_fim']   != null ? DateTime.parse(j['data_fim'] as String) : DateTime.parse(j['data_inicio'] as String),
+    funcao:     j['funcao']     as String? ?? 'Plantão',
+    status:     j['status']     as String? ?? 'agendado',
+  );
 
   String get turno {
     final h = dataInicio.hour;
@@ -67,19 +58,25 @@ class PaginaMeuCalendario extends StatefulWidget {
 
 class _State extends State<PaginaMeuCalendario> {
   static const _cor      = Color.fromARGB(255, 9, 17, 131);
-  static const _baseUrl  = 'http://10.0.2.2:5000'; // IP Local
+  static const _vibrante = Color(0xFF3948F5);
+  static const _baseUrl  = 'https://api.escalamed.com.br'; // ← altere conforme o servidor
 
   DateTime  _mes      = DateTime.now();
   DateTime? _diaSel;
   bool      _carregando = false;
 
+  // Dados do back-end
+  // Chave: 'YYYY-MM-DD' → lista de plantões
   Map<String, List<_PlantaoItem>> _plantoesMes = {};
   List<_PlantaoItem> _plantoesDia = [];
 
+  // Totais do mês para as métricas
   int get _totalMes   => _plantoesMes.values.fold(0, (s, l) => s + l.length);
-  int get _diasTrabalhados => _plantoesMes.keys.where((k) => k.startsWith(_prefMes)).length;
+  int get _diasTrabalhados => _plantoesMes.keys
+      .where((k) => k.startsWith(_prefMes)).length;
 
-  String get _prefMes => '${_mes.year}-${_mes.month.toString().padLeft(2,'0')}';
+  String get _prefMes =>
+      '${_mes.year}-${_mes.month.toString().padLeft(2,'0')}';
 
   Map<String, String> get _headers => {
     'Content-Type': 'application/json',
@@ -92,6 +89,7 @@ class _State extends State<PaginaMeuCalendario> {
     _carregarMes();
   }
 
+  //Carrega os plantões do mês via GET /api/calendario/mes 
   Future<void> _carregarMes() async {
     setState(() { _carregando = true; _plantoesMes = {}; _diaSel = null; _plantoesDia = []; });
     try {
@@ -100,30 +98,25 @@ class _State extends State<PaginaMeuCalendario> {
       final res = await http.get(uri, headers: _headers);
 
       if (res.statusCode == 200) {
-        final body = jsonDecode(res.body);
-        final lista = body['plantoes_mes'] as List? ?? [];
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
+        final lista = (body['plantoes_mes'] as List?)?.cast<Map<String, dynamic>>() ?? [];
         final mapa = <String, List<_PlantaoItem>>{};
-        
         for (final j in lista) {
-          if (j is Map<String, dynamic>) {
-            try { // Protege o loop: se 1 plantão estiver corrompido, carrega o resto!
-              final item = _PlantaoItem.fromJson(j);
-              final chave = _chave(item.dataInicio);
-              mapa.putIfAbsent(chave, () => []).add(item);
-            } catch (e) {
-              debugPrint('Erro ao converter plantão (Mês): $e');
-            }
-          }
+          final item = _PlantaoItem.fromJson(j);
+          final chave = _chave(item.dataInicio);
+          mapa.putIfAbsent(chave, () => []).add(item);
         }
         _plantoesMes = mapa;
       }
-    } catch (e) {
-      debugPrint("Erro ao carregar calendário: $e");
+    } catch (_) {
+      // Fallback com dados de exemplo quando o back-end não está acessível
+      _plantoesMes = _dadosFallback();
     } finally {
       if (mounted) setState(() => _carregando = false);
     }
   }
 
+  //Carrega os detalhes do dia via GET /api/calendario/dia 
   Future<void> _carregarDia(DateTime dia) async {
     setState(() { _diaSel = dia; _plantoesDia = []; _carregando = true; });
     try {
@@ -131,23 +124,14 @@ class _State extends State<PaginaMeuCalendario> {
         'ano': '${dia.year}', 'mes': '${dia.month}', 'dia': '${dia.day}',
       });
       final res = await http.get(uri, headers: _headers);
-      
       if (res.statusCode == 200) {
-        final body = jsonDecode(res.body);
-        final lista = body['plantoes_dia'] as List? ?? [];
-        
-        final plantoes = <_PlantaoItem>[];
-        for (final j in lista) {
-          if (j is Map<String, dynamic>) {
-            try {
-              plantoes.add(_PlantaoItem.fromJson(j));
-            } catch (e) {
-              debugPrint('Erro ao converter plantão (Dia): $e');
-            }
-          }
-        }
-        _plantoesDia = plantoes;
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
+        _plantoesDia = ((body['plantoes_dia'] as List?) ?? [])
+            .cast<Map<String, dynamic>>()
+            .map(_PlantaoItem.fromJson)
+            .toList();
       } else {
+        // Usa o que já temos do mês como fallback para o dia
         _plantoesDia = _plantoesMes[_chave(dia)] ?? [];
       }
     } catch (_) {
@@ -179,6 +163,8 @@ class _State extends State<PaginaMeuCalendario> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(child: Column(children: [
+
+        //Cabeçalho gradiente com métricas + calendário 
         Cabecalho2(
           titulo: 'Meu Calendário',
           metricas: [
@@ -194,38 +180,36 @@ class _State extends State<PaginaMeuCalendario> {
                   padding: EdgeInsets.zero, constraints: const BoxConstraints()),
           extras: [
             const SizedBox(height: 12),
+
+            // Botões de ação rápida
             Row(children: [
-              _BotaoAcao(
-                icone: Icons.add,
-                label: 'Agendar\nPlantão',
-                cor: const Color(0xFF00C9C8),
-                onTap: () {},
-              ),
-              const SizedBox(width: 10),
               _BotaoAcao(
                 icone: Icons.search,
                 label: 'Pesquisar\nPlantão',
                 cor: _cor,
-                onTap: () {},
+                onTap: () => _abrirFiltroPesquisa(context),
               ),
               const SizedBox(width: 10),
               _BotaoAcao(
                 icone: Icons.swap_horiz_outlined,
-                label: 'Confirmar\nTroca',
-                cor: const Color(0xFF00C9C8).withValues(alpha: 0.6),
+                label: 'Solicitar\nTroca',
+                cor: const Color(0xFF00C9C8),
                 onTap: () => Navigator.push(context,
                     MaterialPageRoute(builder: (_) => const PaginaTrocaPlantao())),
               ),
             ]),
+
             const SizedBox(height: 16),
+
+            // Navegação de mês
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               IconButton(
-                onPressed: _carregando ? null : () => _mudarMes(-1),
+                onPressed: () => _mudarMes(-1),
                 icon: const Icon(Icons.chevron_left, color: Colors.white)),
               Text(_nomeMes(_mes),
                   style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white)),
               IconButton(
-                onPressed: _carregando ? null : () => _mudarMes(1),
+                onPressed: () => _mudarMes(1),
                 icon: const Icon(Icons.chevron_right, color: Colors.white)),
               GestureDetector(
                 onTap: () { _mes = DateTime.now(); _carregarMes(); },
@@ -238,19 +222,28 @@ class _State extends State<PaginaMeuCalendario> {
                     Text('Hoje', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                   ]))),
             ]),
+
+            // Cabeçalho dos dias da semana
             Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: ['DOM','SEG','TER','QUA','QUI','SEX','SÁB']
                   .map((d) => SizedBox(width: 38,
                       child: Text(d, textAlign: TextAlign.center,
                           style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white60))))
                   .toList()),
+
             const SizedBox(height: 6),
+
+            // Grade de dias
             ..._buildGrade(),
           ],
         ),
+
+        //Área inferior: detalhes do dia 
         Expanded(child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+
+            // Título do dia selecionado
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Text(
                 _diaSel != null
@@ -261,10 +254,13 @@ class _State extends State<PaginaMeuCalendario> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(color: _cor.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(20)),
-                  child: Text('${_plantoesDia.length} plantão',
+                  child: Text('${_plantoesDia.length} plantão(ões)',
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _cor))),
             ]),
+
             const SizedBox(height: 12),
+
+            // Lista de plantões do dia ou estado vazio
             Expanded(child: _buildListaDia()),
           ]),
         )),
@@ -272,6 +268,134 @@ class _State extends State<PaginaMeuCalendario> {
     );
   }
 
+
+  //Filtro de pesquisa de plantões
+  void _abrirFiltroPesquisa(BuildContext context) {
+    String? _turnoSel;
+    String? _statusSel;
+
+    final turnos  = ['Manhã', 'Tarde', 'Noite'];
+    final statuses = ['Agendado', 'Concluído', 'Troca solicitada', 'Em aberto', 'Falta justificada', 'Falta injustificada'];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModal) => Padding(
+          padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // Título
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              const Text('Filtrar Plantões',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 9, 17, 131))),
+              IconButton(onPressed: () => Navigator.pop(ctx),
+                  icon: const Icon(Icons.close, color: Color.fromARGB(255, 9, 17, 131))),
+            ]),
+
+            const SizedBox(height: 16),
+
+            // Turno
+            const Text('Turno', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 9, 17, 131))),
+            const SizedBox(height: 8),
+            Wrap(spacing: 8, children: turnos.map((t) {
+              final sel = _turnoSel == t;
+              return GestureDetector(
+                onTap: () => setModal(() => _turnoSel = sel ? null : t),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: sel ? const Color.fromARGB(255, 9, 17, 131) : const Color(0xFFF4F6FA),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFB0B5D9), width: 1.2)),
+                  child: Text(t, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
+                      color: sel ? Colors.white : const Color.fromARGB(255, 9, 17, 131)))),
+              );
+            }).toList()),
+
+            const SizedBox(height: 16),
+
+            // Status
+            const Text('Status', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 9, 17, 131))),
+            const SizedBox(height: 8),
+            Wrap(spacing: 8, runSpacing: 8, children: statuses.map((s) {
+              final sel = _statusSel == s;
+              return GestureDetector(
+                onTap: () => setModal(() => _statusSel = sel ? null : s),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: sel ? const Color.fromARGB(255, 9, 17, 131) : const Color(0xFFF4F6FA),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFB0B5D9), width: 1.2)),
+                  child: Text(s, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
+                      color: sel ? Colors.white : const Color.fromARGB(255, 9, 17, 131)))),
+              );
+            }).toList()),
+
+            const SizedBox(height: 24),
+
+            // Botões
+            Row(children: [
+              Expanded(child: SizedBox(height: 48,
+                child: OutlinedButton(
+                  onPressed: () { setModal(() { _turnoSel = null; _statusSel = null; }); },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color.fromARGB(255, 9, 17, 131),
+                    side: const BorderSide(color: Color.fromARGB(255, 9, 17, 131), width: 1.5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                  child: const Text('Limpar', style: TextStyle(fontWeight: FontWeight.bold))))),
+              const SizedBox(width: 12),
+              Expanded(child: SizedBox(height: 48,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _aplicarFiltro(_turnoSel, _statusSel);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 9, 17, 131),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                  child: const Text('Aplicar', style: TextStyle(fontWeight: FontWeight.bold))))),
+            ]),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  //
+  void _aplicarFiltro(String? turno, String? status) {
+    final statusMap = {
+      'Agendado': 'agendado', 'Concluído': 'concluido',
+      'Troca solicitada': 'solicitada_troca', 'Em aberto': 'em_aberto',
+      'Falta justificada': 'falta_justificada', 'Falta injustificada': 'falta_injustificada',
+    };
+    final statusBackend = status != null ? statusMap[status] : null;
+
+    // Filtra os plantões do dia selecionado (ou todos do mês se nenhum dia selecionado)
+    List<_PlantaoItem> todos = _diaSel != null
+        ? (_plantoesMes[_chave(_diaSel!)] ?? [])
+        : _plantoesMes.values.expand((l) => l).toList();
+
+    setState(() {
+      _plantoesDia = todos.where((p) {
+        final turnoOk  = turno == null || p.turno == turno;
+        final statusOk = statusBackend == null || p.status == statusBackend;
+        return turnoOk && statusOk;
+      }).toList();
+    });
+
+    if (_plantoesDia.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Nenhum plantão encontrado com esses filtros.'),
+        backgroundColor: Color.fromARGB(255, 9, 17, 131),
+        behavior: SnackBarBehavior.floating));
+    }
+  }
+
+  //Calendário
   List<Widget> _buildGrade() {
     final primeiro = DateTime(_mes.year, _mes.month, 1);
     final ultimo   = DateTime(_mes.year, _mes.month + 1, 0);
@@ -316,6 +440,7 @@ class _State extends State<PaginaMeuCalendario> {
                   fontWeight: (sel || ehHoje || tem) ? FontWeight.bold : FontWeight.normal,
                   color: sel ? _cor : Colors.white,
                 ))),
+              // Bolinha indicadora de plantão
               if (tem && !sel)
                 Container(width: 4, height: 4,
                     decoration: const BoxDecoration(color: Color(0xFF00C9C8), shape: BoxShape.circle)),
@@ -329,6 +454,7 @@ class _State extends State<PaginaMeuCalendario> {
     return semanas;
   }
 
+  //Lista de plantões
   Widget _buildListaDia() {
     if (_diaSel == null) {
       return _vazio(Icons.touch_app_outlined, 'Toque em um dia para ver seus plantões');
@@ -341,7 +467,7 @@ class _State extends State<PaginaMeuCalendario> {
     }
     return ListView.separated(
       itemCount: _plantoesDia.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (_, i) => _CardPlantao(item: _plantoesDia[i]),
     );
   }
@@ -353,8 +479,33 @@ class _State extends State<PaginaMeuCalendario> {
       Text(msg, textAlign: TextAlign.center,
           style: TextStyle(fontSize: 14, color: _cor.withValues(alpha: 0.4))),
     ]));
+
+  //Dados de exemplo
+  Map<String, List<_PlantaoItem>> _dadosFallback() {
+    final agora = DateTime.now();
+    final ano   = agora.year;
+    final mes   = agora.month;
+    return {
+      '$ano-${mes.toString().padLeft(2,'0')}-05': [
+        _PlantaoItem(id:1, dataInicio: DateTime(ano,mes,5,6),  dataFim: DateTime(ano,mes,5,14), funcao:'Plantão Médico', status:'agendado'),
+      ],
+      '$ano-${mes.toString().padLeft(2,'0')}-10': [
+        _PlantaoItem(id:2, dataInicio: DateTime(ano,mes,10,14),dataFim: DateTime(ano,mes,10,22),funcao:'Plantão Médico', status:'agendado'),
+      ],
+      '$ano-${mes.toString().padLeft(2,'0')}-15': [
+        _PlantaoItem(id:3, dataInicio: DateTime(ano,mes,15,22),dataFim: DateTime(ano,mes,16,6), funcao:'Plantão Médico', status:'solicitada_troca'),
+      ],
+      '$ano-${mes.toString().padLeft(2,'0')}-20': [
+        _PlantaoItem(id:4, dataInicio: DateTime(ano,mes,20,6), dataFim: DateTime(ano,mes,20,14),funcao:'Plantão Médico', status:'concluido'),
+      ],
+      '$ano-${mes.toString().padLeft(2,'0')}-25': [
+        _PlantaoItem(id:5, dataInicio: DateTime(ano,mes,25,14),dataFim: DateTime(ano,mes,25,22),funcao:'Plantão Médico', status:'agendado'),
+      ],
+    };
+  }
 }
 
+//Botão de ação rápida no cabeçalho
 class _BotaoAcao extends StatelessWidget {
   final IconData icone;
   final String label;
@@ -380,6 +531,7 @@ class _BotaoAcao extends StatelessWidget {
   );
 }
 
+//Card de plantão do dia
 class _CardPlantao extends StatelessWidget {
   final _PlantaoItem item;
   const _CardPlantao({required this.item});
@@ -398,6 +550,7 @@ class _CardPlantao extends StatelessWidget {
   Color    get _corTurno   => _coresTurno[item.turno]  ?? const Color(0xFF4A148C);
   IconData get _iconeTurno => _iconesTurno[item.turno] ?? Icons.schedule_outlined;
 
+  // Cor e label do status vindo do back-end
   Color  _corStatus(String s) {
     switch (s) {
       case 'agendado':          return const Color(0xFF1565C0);
@@ -438,11 +591,15 @@ class _CardPlantao extends StatelessWidget {
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0,2))],
       ),
       child: Row(children: [
+        // Ícone de turno
         Container(
           width: 48, height: 48,
           decoration: BoxDecoration(color: _corTurno.withValues(alpha: 0.1), shape: BoxShape.circle),
           child: Icon(_iconeTurno, color: _corTurno, size: 22)),
+
         const SizedBox(width: 14),
+
+        // Informações
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(item.funcao,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: azul)),
@@ -459,6 +616,8 @@ class _CardPlantao extends StatelessWidget {
                 style: TextStyle(fontSize: 12, color: azul.withValues(alpha: 0.6))),
           ]),
         ])),
+
+        // Badge de status
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
           decoration: BoxDecoration(
