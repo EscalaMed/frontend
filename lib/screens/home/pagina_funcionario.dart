@@ -1,3 +1,5 @@
+// screens/home/pagina_funcionario.dart
+import 'package:escalamed/screens/pagina_meu_calendario.dart';
 import 'package:flutter/material.dart';
 import '../../components/card_grid_menu.dart';
 import '../pagina_troca_plantao.dart';
@@ -86,7 +88,7 @@ class PaginaFuncionario extends StatelessWidget {
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             const Text('Esta Semana', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _cor)),
             GestureDetector(
-                onTap: () {},
+                onTap: () => _navegar(context, const PaginaMeuCalendario(token: 'token_ficticio_local',)),
                 child: const Text('Ver calendário',
                     style: TextStyle(fontSize: 13, color: _vibrante, fontWeight: FontWeight.bold))),
           ]),
