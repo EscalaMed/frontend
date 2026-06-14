@@ -226,7 +226,7 @@ class _PaginaCriarPlantaoState extends State<PaginaCriarPlantao> {
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFB0B5D9))),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFB0B5D9))),
                     ),
-                    value: _setorSelecionado,
+                    initialValue: _setorSelecionado,
                     hint: const Text('Selecione o setor'),
                     items: _setores.map((s) {
                       return DropdownMenuItem<dynamic>(value: s, child: Text(s['nome']));
@@ -249,7 +249,7 @@ class _PaginaCriarPlantaoState extends State<PaginaCriarPlantao> {
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFB0B5D9))),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFB0B5D9))),
                     ),
-                    value: _funcionarioSelecionado,
+                    initialValue: _funcionarioSelecionado,
                     hint: const Text('Selecione um funcionário'),
                     items: _funcionarios.map((f) {
                       return DropdownMenuItem<dynamic>(value: f, child: Text(f['nome']));

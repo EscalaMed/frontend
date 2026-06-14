@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -417,7 +419,7 @@ class _ListaSolicitacoes extends StatelessWidget {
 
     return ListView.separated(
       itemCount: s._minhasSolicitacoesBackend.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 16),
+      separatorBuilder: (_, _) => const SizedBox(height: 16),
       itemBuilder: (_, i) {
         final item = s._minhasSolicitacoesBackend[i];
         return CardTroca(

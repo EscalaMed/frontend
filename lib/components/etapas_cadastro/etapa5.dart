@@ -19,7 +19,7 @@ class _TelaSetoresState extends State<TelaSetores> {
   final TextEditingController _nomeSetorController = TextEditingController();
   final TextEditingController _coordenadorController = TextEditingController();
 
-  List<String> _listaCoordenadores = ['Dr. Carlos Alberto', 'Dra. Mariana Souza'];
+  final List<String> _listaCoordenadores = ['Dr. Carlos Alberto', 'Dra. Mariana Souza'];
 
   @override
   void dispose() {

@@ -74,7 +74,7 @@ class _PaginaConfiguracoesState extends State<PaginaConfiguracoes> {
                   children: [
                     CircleAvatar(
                       radius: 44,
-                      backgroundColor: corAzulEscuro.withOpacity(0.1),
+                      backgroundColor: corAzulEscuro.withValues(alpha: 0.1),
                       child: const Icon(Icons.person, size: 52, color: corAzulEscuro),
                     ),
                     Positioned(
@@ -203,9 +203,9 @@ class _SecaoSeguranca extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 9, 17, 131).withOpacity(0.06),
+          color: const Color.fromARGB(255, 9, 17, 131).withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color.fromARGB(255, 9, 17, 131).withOpacity(0.15)),
+          border: Border.all(color: const Color.fromARGB(255, 9, 17, 131).withValues(alpha: 0.15)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,7 +309,7 @@ class _ItemNotificacao extends StatelessWidget {
               Text(subtitulo, style: const TextStyle(fontSize: 12, color: Color(0xFF8A94C9))),
             ]),
           ),
-          Switch(value: valor, onChanged: onChanged, activeColor: cor),
+          Switch(value: valor, onChanged: onChanged, activeThumbColor: cor),
         ],
       ),
     );
