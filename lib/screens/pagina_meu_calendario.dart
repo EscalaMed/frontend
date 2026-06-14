@@ -1,11 +1,10 @@
 // screens/pagina_meu_calendario.dart
-import 'dart:convert';
+// screens/pagina_meu_calendario.dart
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import '../components/cabecalho2.dart';
 import 'pagina_troca_plantao.dart';
 
-// ── Modelo de plantão vindo do back-end ───────────────────────────────
+//
 class _PlantaoItem {
   final int    id;
   final DateTime dataInicio;
@@ -20,14 +19,6 @@ class _PlantaoItem {
     required this.funcao,
     required this.status,
   });
-
-  factory _PlantaoItem.fromJson(Map<String, dynamic> j) => _PlantaoItem(
-    id:         j['id_plantao'] as int,
-    dataInicio: DateTime.parse(j['data_inicio'] as String),
-    dataFim:    j['data_fim']   != null ? DateTime.parse(j['data_fim'] as String) : DateTime.parse(j['data_inicio'] as String),
-    funcao:     j['funcao']     as String? ?? 'Plantão',
-    status:     j['status']     as String? ?? 'agendado',
-  );
 
   String get turno {
     final h = dataInicio.hour;
@@ -59,13 +50,11 @@ class PaginaMeuCalendario extends StatefulWidget {
 class _State extends State<PaginaMeuCalendario> {
   static const _cor      = Color.fromARGB(255, 9, 17, 131);
   static const _vibrante = Color(0xFF3948F5);
-  static const _baseUrl  = 'https://api.escalamed.com.br'; // ← altere conforme o servidor
 
   DateTime  _mes      = DateTime.now();
   DateTime? _diaSel;
-  bool      _carregando = false;
 
-  // Dados do back-end
+  // Dados Locais
   // Chave: 'YYYY-MM-DD' → lista de plantões
   Map<String, List<_PlantaoItem>> _plantoesMes = {};
   List<_PlantaoItem> _plantoesDia = [];
@@ -78,72 +67,32 @@ class _State extends State<PaginaMeuCalendario> {
   String get _prefMes =>
       '${_mes.year}-${_mes.month.toString().padLeft(2,'0')}';
 
-  Map<String, String> get _headers => {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer ${widget.token}',
-  };
-
   @override
   void initState() {
     super.initState();
-    _carregarMes();
+    _atualizarDadosLocais();
   }
 
-  // ── Carrega os plantões do mês via GET /api/calendario/mes ─────────
-  Future<void> _carregarMes() async {
-    setState(() { _carregando = true; _plantoesMes = {}; _diaSel = null; _plantoesDia = []; });
-    try {
-      final uri = Uri.parse('$_baseUrl/api/calendario/mes')
-          .replace(queryParameters: {'ano': '${_mes.year}', 'mes': '${_mes.month}'});
-      final res = await http.get(uri, headers: _headers);
-
-      if (res.statusCode == 200) {
-        final body = jsonDecode(res.body) as Map<String, dynamic>;
-        final lista = (body['plantoes_mes'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-        final mapa = <String, List<_PlantaoItem>>{};
-        for (final j in lista) {
-          final item = _PlantaoItem.fromJson(j);
-          final chave = _chave(item.dataInicio);
-          mapa.putIfAbsent(chave, () => []).add(item);
-        }
-        _plantoesMes = mapa;
-      }
-    } catch (_) {
-      // Fallback com dados de exemplo quando o back-end não está acessível
+  //Carrega os dados simulados locais 
+  void _atualizarDadosLocais() {
+    setState(() {
       _plantoesMes = _dadosFallback();
-    } finally {
-      if (mounted) setState(() => _carregando = false);
-    }
+      _diaSel = null;
+      _plantoesDia = [];
+    });
   }
 
-  // ── Carrega os detalhes do dia via GET /api/calendario/dia ─────────
-  Future<void> _carregarDia(DateTime dia) async {
-    setState(() { _diaSel = dia; _plantoesDia = []; _carregando = true; });
-    try {
-      final uri = Uri.parse('$_baseUrl/api/calendario/dia').replace(queryParameters: {
-        'ano': '${dia.year}', 'mes': '${dia.month}', 'dia': '${dia.day}',
-      });
-      final res = await http.get(uri, headers: _headers);
-      if (res.statusCode == 200) {
-        final body = jsonDecode(res.body) as Map<String, dynamic>;
-        _plantoesDia = ((body['plantoes_dia'] as List?) ?? [])
-            .cast<Map<String, dynamic>>()
-            .map(_PlantaoItem.fromJson)
-            .toList();
-      } else {
-        // Usa o que já temos do mês como fallback para o dia
-        _plantoesDia = _plantoesMes[_chave(dia)] ?? [];
-      }
-    } catch (_) {
+  //
+  void _selecionarDia(DateTime dia) {
+    setState(() {
+      _diaSel = dia;
       _plantoesDia = _plantoesMes[_chave(dia)] ?? [];
-    } finally {
-      if (mounted) setState(() => _carregando = false);
-    }
+    });
   }
 
   void _mudarMes(int delta) {
     _mes = DateTime(_mes.year, _mes.month + delta);
-    _carregarMes();
+    _atualizarDadosLocais();
   }
 
   String _chave(DateTime d) =>
@@ -164,20 +113,17 @@ class _State extends State<PaginaMeuCalendario> {
       backgroundColor: Colors.white,
       body: SafeArea(child: Column(children: [
 
-        // ── Cabeçalho gradiente com métricas + calendário ──────────
+        //Cabeçalho gradiente com métricas + calendário 
         Cabecalho2(
           titulo: 'Meu Calendário',
           metricas: [
             Metrica('$_totalMes',        'Plantões'),
             Metrica('$_diasTrabalhados', 'Dias'),
           ],
-          acaoDireita: _carregando
-              ? const SizedBox(width: 18, height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white70))
-              : IconButton(
-                  onPressed: _carregarMes,
-                  icon: const Icon(Icons.refresh, color: Colors.white70, size: 20),
-                  padding: EdgeInsets.zero, constraints: const BoxConstraints()),
+          acaoDireita: IconButton(
+              onPressed: _atualizarDadosLocais,
+              icon: const Icon(Icons.refresh, color: Colors.white70, size: 20),
+              padding: EdgeInsets.zero, constraints: const BoxConstraints()),
           extras: [
             const SizedBox(height: 12),
 
@@ -219,7 +165,7 @@ class _State extends State<PaginaMeuCalendario> {
                 onPressed: () => _mudarMes(1),
                 icon: const Icon(Icons.chevron_right, color: Colors.white)),
               GestureDetector(
-                onTap: () { _mes = DateTime.now(); _carregarMes(); },
+                onTap: () { _mes = DateTime.now(); _atualizarDadosLocais(); },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(8)),
@@ -245,7 +191,7 @@ class _State extends State<PaginaMeuCalendario> {
           ],
         ),
 
-        // ── Área inferior: detalhes do dia ─────────────────────────
+        //Área inferior: detalhes do dia 
         Expanded(child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -275,7 +221,7 @@ class _State extends State<PaginaMeuCalendario> {
     );
   }
 
-  // ── Grade mensal do calendário ─────────────────────────────────────
+  //Grade mensal do calendário
   List<Widget> _buildGrade() {
     final primeiro = DateTime(_mes.year, _mes.month, 1);
     final ultimo   = DateTime(_mes.year, _mes.month + 1, 0);
@@ -296,7 +242,7 @@ class _State extends State<PaginaMeuCalendario> {
         final tem    = _temPlantao(d);
 
         celulas.add(GestureDetector(
-          onTap: () => _carregarDia(d),
+          onTap: () => _selecionarDia(d),
           child: SizedBox(width: 38, height: 44,
             child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Container(
@@ -334,13 +280,10 @@ class _State extends State<PaginaMeuCalendario> {
     return semanas;
   }
 
-  // ── Lista de plantões do dia selecionado ──────────────────────────
+  //Lista de plantões do dia selecionado 
   Widget _buildListaDia() {
     if (_diaSel == null) {
       return _vazio(Icons.touch_app_outlined, 'Toque em um dia para ver seus plantões');
-    }
-    if (_carregando) {
-      return const Center(child: CircularProgressIndicator(color: _cor));
     }
     if (_plantoesDia.isEmpty) {
       return _vazio(Icons.event_available_outlined, 'Nenhum plantão agendado neste dia');
@@ -360,11 +303,10 @@ class _State extends State<PaginaMeuCalendario> {
           style: TextStyle(fontSize: 14, color: _cor.withValues(alpha: 0.4))),
     ]));
 
-  // ── Dados de exemplo (fallback offline) ───────────────────────────
+  //
   Map<String, List<_PlantaoItem>> _dadosFallback() {
-    final agora = DateTime.now();
-    final ano   = agora.year;
-    final mes   = agora.month;
+    final ano = _mes.year;
+    final mes = _mes.month;
     return {
       '$ano-${mes.toString().padLeft(2,'0')}-05': [
         _PlantaoItem(id:1, dataInicio: DateTime(ano,mes,5,6),  dataFim: DateTime(ano,mes,5,14), funcao:'Plantão Médico', status:'agendado'),
@@ -385,7 +327,7 @@ class _State extends State<PaginaMeuCalendario> {
   }
 }
 
-// ── Botão de ação rápida no cabeçalho ─────────────────────────────────
+//Botão de ação rápida no cabeçalho 
 class _BotaoAcao extends StatelessWidget {
   final IconData icone;
   final String label;
@@ -411,7 +353,7 @@ class _BotaoAcao extends StatelessWidget {
   );
 }
 
-// ── Card de plantão do dia ─────────────────────────────────────────────
+//Card de plantão do dia 
 class _CardPlantao extends StatelessWidget {
   final _PlantaoItem item;
   const _CardPlantao({required this.item});
@@ -430,7 +372,6 @@ class _CardPlantao extends StatelessWidget {
   Color    get _corTurno   => _coresTurno[item.turno]  ?? const Color(0xFF4A148C);
   IconData get _iconeTurno => _iconesTurno[item.turno] ?? Icons.schedule_outlined;
 
-  // Cor e label do status vindo do back-end
   Color  _corStatus(String s) {
     switch (s) {
       case 'agendado':          return const Color(0xFF1565C0);
@@ -471,7 +412,6 @@ class _CardPlantao extends StatelessWidget {
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0,2))],
       ),
       child: Row(children: [
-        // Ícone de turno
         Container(
           width: 48, height: 48,
           decoration: BoxDecoration(color: _corTurno.withValues(alpha: 0.1), shape: BoxShape.circle),
@@ -479,7 +419,6 @@ class _CardPlantao extends StatelessWidget {
 
         const SizedBox(width: 14),
 
-        // Informações
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(item.funcao,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: azul)),
@@ -497,7 +436,6 @@ class _CardPlantao extends StatelessWidget {
           ]),
         ])),
 
-        // Badge de status
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
           decoration: BoxDecoration(
