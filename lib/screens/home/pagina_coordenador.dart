@@ -1,18 +1,20 @@
 // screens/home/pagina_coordenador.dart
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import '../../components/card_grid_menu.dart';
 import '../../components/etapas_cadastro/etapa3.dart';
-import '../pagina_escalas.dart';
+import '../pagina_calendario_gestao.dart';
 import '../pagina_configuracoes.dart';
 
 class PaginaCoordenador extends StatefulWidget {
   final String token;
+  final String nomeUsuario;
+  final String setor;
 
   const PaginaCoordenador({
     super.key,
     required this.token,
+    this.nomeUsuario = 'Dr. Carlos Mendes',
+    this.setor = 'UTI',
   });
 
   @override
@@ -23,132 +25,65 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
   static const _cor      = Color.fromARGB(255, 9, 17, 131);
   static const _vibrante = Color(0xFF3948F5);
   static const _fundo    = Color(0xFFF4F6FA);
-  static const _baseUrl  = 'http://10.0.2.2:5000'; // IP do Emulador
 
-  bool _carregando = true;
-  
-  // Variáveis vindas dinamicamente do Banco de Dados
-  String _nomeDoBanco = 'Carregando...';
-  String _setorDoBanco = '...';
-  List<Map<String, dynamic>> _trocasPendentes = [];
+  final _trocas = <Map<String, String>>[
+    {
+      'nome': 'Enf. Ana Paula',
+      'de': '10/06 Manhã',
+      'para': '12/06 Tarde',
+      'motivo': 'Consulta médica',
+      'tempo': 'há 2h'
+    },
+    {
+      'nome': 'Tec. Roberto Lima',
+      'de': '15/06 Noite',
+      'para': '17/06 Manhã',
+      'motivo': 'Compromisso familiar',
+      'tempo': 'há 5h'
+    },
+    {
+      'nome': 'Enf. Julia Rocha',
+      'de': '18/06 Tarde',
+      'para': '20/06 Manhã',
+      'motivo': 'Viagem programada',
+      'tempo': 'há 1d'
+    },
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    _buscarTodosOsDados();
-  }
-
-  Future<void> _buscarTodosOsDados() async {
-    try {
-      final String tokenJwt = widget.token;
-
-      final headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $tokenJwt',
-      };
-
-      // Prepara as duas requisições para rodarem juntas
-      final uriPerfil = Uri.parse('$_baseUrl/api/perfil');
-      final uriTrocas = Uri.parse('$_baseUrl/pedidos_troca/pendentes');
-
-      final respostas = await Future.wait([
-        http.get(uriPerfil, headers: headers),
-        http.get(uriTrocas, headers: headers),
-      ]);
-
-      final resPerfil = respostas[0];
-      final resTrocas = respostas[1];
-
-      // 1. Processa o Perfil do Coordenador
-      if (resPerfil.statusCode == 200) {
-        final dadosPerfil = jsonDecode(resPerfil.body);
-        _nomeDoBanco = dadosPerfil['nome'] ?? 'Coordenador';
-        _setorDoBanco = dadosPerfil['setor'] ?? 'Geral';
-      }
-
-      // 2. Processa os Pedidos de Troca do Setor
-      if (resTrocas.statusCode == 200) {
-        final body = jsonDecode(resTrocas.body);
-        setState(() {
-          _trocasPendentes = List<Map<String, dynamic>>.from(
-              body is List ? body : body['pedidos'] ?? []);
-        });
-      }
-    } catch (e) {
-      debugPrint("Erro ao carregar dados do coordenador: $e");
-    } finally {
-      if (mounted) setState(() => _carregando = false);
-    }
-  }
-
-  Future<void> _responderTroca(int index, int idTroca, bool aceitar) async {
-    // Atualização otimista na UI (remove da lista na hora para dar sensação de velocidade)
-    setState(() => _trocasPendentes.removeAt(index));
-    
-    try {
-      final String tokenJwt = widget.token;
-      final statusStr = aceitar ? 'aprovar' : 'recusar';
-      final uri = Uri.parse('$_baseUrl/pedidos_troca/$idTroca/$statusStr'); 
-      
-      final res = await http.put(uri, headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $tokenJwt',
-      });
-
-      if (res.statusCode == 200) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(aceitar ? 'Troca aprovada!' : 'Troca recusada.'),
-            backgroundColor: aceitar ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))));
-      } else {
-        _buscarTodosOsDados(); // Se falhar no back, recarrega os dados reais
-      }
-    } catch (_) {
-      _buscarTodosOsDados();
-    }
+  void _responderTroca(int i, bool aceitar) {
+    setState(() => _trocas.removeAt(i));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(aceitar ? 'Troca aprovada!' : 'Troca recusada.'),
+        backgroundColor: aceitar ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))));
   }
 
   void _navegar(Widget pagina) =>
       Navigator.push(context, MaterialPageRoute(builder: (_) => pagina));
 
-  String _formatarDataParaCard(String? dataIso) {
-    if (dataIso == null) return '';
-    final d = DateTime.parse(dataIso);
-    return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')} - ${d.hour.toString().padLeft(2, '0')}h';
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (_carregando) {
-      return const Scaffold(
-          backgroundColor: _fundo,
-          body: Center(child: CircularProgressIndicator(color: _cor)));
-    }
-
     return Scaffold(
       backgroundColor: _fundo,
       body: SafeArea(
           child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          
-          // Cabeçalho Dinâmico
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Olá, ${_nomeDoBanco.split(' ').first}',
+              Text('Olá, ${widget.nomeUsuario.split(' ').first}',
                   style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: _cor)),
               const SizedBox(height: 4),
-              Text('Coordenador – $_setorDoBanco',
+              Text('Coordenador – ${widget.setor}',
                   style: const TextStyle(fontSize: 14, color: Colors.grey)),
             ])),
             Stack(children: [
               IconButton(
                   onPressed: () {},
                   icon: const Icon(Icons.notifications_none_outlined, color: _cor, size: 28)),
-              if (_trocasPendentes.isNotEmpty)
+              if (_trocas.isNotEmpty)
                 Positioned(
                     top: 8,
                     right: 8,
@@ -157,7 +92,7 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
                         height: 16,
                         decoration: const BoxDecoration(color: Color(0xFFC62828), shape: BoxShape.circle),
                         child: Center(
-                            child: Text('${_trocasPendentes.length}',
+                            child: Text('${_trocas.length}',
                                 style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 10,
@@ -167,7 +102,6 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
 
           const SizedBox(height: 24),
 
-          // Card do Setor Dinâmico
           Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -180,29 +114,28 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
                         color: _vibrante.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 6))
                   ]),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Meu Setor – $_setorDoBanco',
+                Text('Meu Setor – ${widget.setor}',
                     style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 8),
-                const Text('Gestão Diária',
+                const Text('3 Plantões Hoje',
                     style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  const _Mini('-', 'Plantões Hoje'),
-                  _Mini('${_trocasPendentes.length}', 'Pendentes'),
+                  _Mini('10', 'Leitos'),
+                  _Mini('${_trocas.length}', 'Pendentes'),
                 ]),
               ])),
 
           const SizedBox(height: 24),
 
-          // Seção de Trocas
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text('Trocas Pendentes (${_trocasPendentes.length})',
+            Text('Trocas Pendentes (${_trocas.length})',
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _cor)),
-            if (_trocasPendentes.isEmpty) const Icon(Icons.check_circle_outline, color: Color(0xFF2E7D32), size: 20),
+            if (_trocas.isEmpty) const Icon(Icons.check_circle_outline, color: Color(0xFF2E7D32), size: 20),
           ]),
           const SizedBox(height: 12),
 
-          if (_trocasPendentes.isEmpty)
+          if (_trocas.isEmpty)
             Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -214,29 +147,18 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
                     child: Text('Nenhuma solicitação pendente.',
                         style: TextStyle(fontSize: 14, color: Color(0xFF8A94C9)))))
           else
-            ...List.generate(_trocasPendentes.length, (i) {
-              final troca = _trocasPendentes[i];
-              final mapVisual = {
-                'id': troca['id'] ?? 0,
-                'nome': troca['solicitante_nome'] ?? 'Colaborador',
-                'de': _formatarDataParaCard(troca['plantao_atual_inicio']),
-                'para': _formatarDataParaCard(troca['plantao_desejado_inicio']),
-                'motivo': troca['motivo'] ?? 'Sem motivo informado',
-                'tempo': troca['criado_em'] != null ? 'Recente' : '',
-              };
-
-              return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _CardTroca(
-                    troca: mapVisual,
-                    onAceitar: () => _responderTroca(i, mapVisual['id'] as int, true),
-                    onRecusar: () => _responderTroca(i, mapVisual['id'] as int, false),
-                  ));
-            }),
+            ...List.generate(
+                _trocas.length,
+                (i) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _CardTroca(
+                      troca: _trocas[i],
+                      onAceitar: () => _responderTroca(i, true),
+                      onRecusar: () => _responderTroca(i, false),
+                    ))),
 
           const SizedBox(height: 24),
 
-          // Grid de Ações
           const Text('Ações Rápidas', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _cor)),
           const SizedBox(height: 16),
 
@@ -251,7 +173,7 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
               CardGridMenu(
                 icone: Icons.calendar_month_outlined,
                 titulo: 'Escalas e\nTurnos',
-                onTap: () => _navegar(PaginaEscalas(token: widget.token)),
+                onTap: () => _navegar(const PaginaCalendarioGestao()),
               ),
               CardGridMenu(
                 icone: Icons.local_hospital_outlined,
@@ -260,7 +182,7 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const Etapa3(
+                      builder: (context) => Etapa3(
                         ehTelaIndependente: true,
                         role: 'coordenador',
                       ),
@@ -275,6 +197,7 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
               ),
             ],
           ),
+
           const SizedBox(height: 16),
         ]),
       )),
@@ -282,7 +205,6 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
   }
 }
 
-// Widgets Auxiliares Privados permanecem os mesmos...
 class _Mini extends StatelessWidget {
   final String valor, label;
   const _Mini(this.valor, this.label);
@@ -294,7 +216,7 @@ class _Mini extends StatelessWidget {
 }
 
 class _CardTroca extends StatelessWidget {
-  final Map<String, dynamic> troca;
+  final Map<String, String> troca;
   final VoidCallback onAceitar, onRecusar;
   const _CardTroca({required this.troca, required this.onAceitar, required this.onRecusar});
 
@@ -316,8 +238,8 @@ class _CardTroca extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(troca['nome'].toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cor)),
-            Text(troca['tempo'].toString(), style: TextStyle(fontSize: 11, color: cor.withValues(alpha: 0.4))),
+            Text(troca['nome']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: cor)),
+            Text(troca['tempo']!, style: TextStyle(fontSize: 11, color: cor.withValues(alpha: 0.4))),
           ])),
         ]),
         const SizedBox(height: 10),
@@ -330,15 +252,15 @@ class _CardTroca extends StatelessWidget {
                   icone: Icons.arrow_upward_outlined,
                   cor: const Color(0xFFC62828),
                   label: 'Cede',
-                  valor: troca['de'].toString()),
+                  valor: troca['de']!),
               const SizedBox(height: 4),
               _LinhaTroca(
                   icone: Icons.arrow_downward_outlined,
                   cor: const Color(0xFF2E7D32),
                   label: 'Recebe',
-                  valor: troca['para'].toString()),
+                  valor: troca['para']!),
               const SizedBox(height: 4),
-              _LinhaTroca(icone: Icons.notes_outlined, cor: cor, label: 'Motivo', valor: troca['motivo'].toString()),
+              _LinhaTroca(icone: Icons.notes_outlined, cor: cor, label: 'Motivo', valor: troca['motivo']!),
             ])),
         const SizedBox(height: 10),
         Row(children: [
@@ -378,6 +300,6 @@ class _LinhaTroca extends StatelessWidget {
   Widget build(BuildContext context) => Row(children: [
         Icon(icone, size: 13, color: cor), const SizedBox(width: 6),
         Text('$label: ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: cor)),
-        Expanded(child: Text(valor, style: const TextStyle(fontSize: 12, color: Color.fromARGB(255, 9, 17, 131)), overflow: TextOverflow.ellipsis)),
+        Text(valor, style: const TextStyle(fontSize: 12, color: Color.fromARGB(255, 9, 17, 131))),
       ]);
 }
