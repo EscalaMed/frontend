@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; 
 import '../../components/barra_progresso.dart';
@@ -28,8 +30,8 @@ class _TelaCoordenadorState extends State<TelaCoordenador> {
   final TextEditingController _cargoController = TextEditingController();
   final TextEditingController _contratoController = TextEditingController();
 
-  List<String> _listaCargos = ['Coordenador de Enfermagem', 'Coordenador Médico', 'Diretor Clínico'];
-  List<String> _listaContratos = ['CLT', 'PJ', 'Prestador de Serviço'];
+  final List<String> _listaCargos = ['Coordenador de Enfermagem', 'Coordenador Médico', 'Diretor Clínico'];
+  final List<String> _listaContratos = ['CLT', 'PJ', 'Prestador de Serviço'];
 
   @override
   void dispose() {

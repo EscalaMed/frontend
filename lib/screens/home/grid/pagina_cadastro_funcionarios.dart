@@ -1,3 +1,6 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -25,10 +28,10 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
   final TextEditingController _contratoController = TextEditingController();
   final TextEditingController _cargaController = TextEditingController();
 
-  List<String> _listaCargos = ['Enfermeiro(a)', 'Médico(a)', 'Recepcionista', 'Técnico(a) em Enfermagem'];
-  List<String> _listaSetores = ['Pronto Socorro', 'Pediatria', 'UTI Geral', 'Ambulatório'];
-  List<String> _listaContratos = ['CLT', 'PJ', 'Estágio', 'Temporário'];
-  List<String> _listaCargasHorarias = ['20h semanais', '30h semanais', '40h semanais', 'Escala 12x36'];
+  final List<String> _listaCargos = ['Enfermeiro(a)', 'Médico(a)', 'Recepcionista', 'Técnico(a) em Enfermagem'];
+  final List<String> _listaSetores = ['Pronto Socorro', 'Pediatria', 'UTI Geral', 'Ambulatório'];
+  final List<String> _listaContratos = ['CLT', 'PJ', 'Estágio', 'Temporário'];
+  final List<String> _listaCargasHorarias = ['20h semanais', '30h semanais', '40h semanais', 'Escala 12x36'];
 
   @override
   void dispose() {
@@ -61,7 +64,9 @@ class _PaginaCadastroFuncionariosState extends State<PaginaCadastroFuncionarios>
         return dados['setor_id'];
       }
     } catch (e) {
-      print("Erro ao garantir setor: $e");
+      if (kDebugMode) {
+        print("Erro ao garantir setor: $e");
+      }
     }
     return null;
   }

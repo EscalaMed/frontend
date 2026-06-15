@@ -1,9 +1,10 @@
-// components/cabecalho2.dart
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 class Cabecalho2 extends StatelessWidget {
   final String titulo;
   final List<_Metrica> metricas;
-  final List<Widget>? extras; //
+  final List<Widget>? extras;
   final Widget? acaoDireita;
 
   const Cabecalho2({
@@ -43,7 +44,7 @@ class Cabecalho2 extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(child: Text(titulo,
                 style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white))),
-            if (acaoDireita != null) acaoDireita!,
+            ?acaoDireita,
           ]),
 
           // Métricas
@@ -52,15 +53,16 @@ class Cabecalho2 extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: metricas.expand((m) sync* {
-                if (metricas.indexOf(m) > 0)
+                if (metricas.indexOf(m) > 0) {
                   yield Container(width: 1, height: 28, color: Colors.white30);
+                }
                 yield _MetricaWidget(metrica: m);
               }).toList(),
             ),
           ],
 
           // Conteúdo extra (calendário, etc.)
-          if (extras != null) ...extras!,
+          ...?extras,
         ],
       ),
     );

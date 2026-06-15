@@ -1,4 +1,3 @@
-// screens/pagina_configuracoes.dart
 import 'package:flutter/material.dart';
 import '../components/campo_texto.dart';
 import '../components/botoes_navegacao.dart';
@@ -52,7 +51,6 @@ class _PaginaConfiguracoesState extends State<PaginaConfiguracoes> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Cabeçalho
               Row(
                 children: [
                   IconButton(
@@ -68,13 +66,12 @@ class _PaginaConfiguracoesState extends State<PaginaConfiguracoes> {
 
               const SizedBox(height: 24),
 
-              // Avatar
               Center(
                 child: Stack(
                   children: [
                     CircleAvatar(
                       radius: 44,
-                      backgroundColor: corAzulEscuro.withOpacity(0.1),
+                      backgroundColor: corAzulEscuro.withValues(alpha: 0.1),
                       child: const Icon(Icons.person, size: 52, color: corAzulEscuro),
                     ),
                     Positioned(
@@ -94,7 +91,6 @@ class _PaginaConfiguracoesState extends State<PaginaConfiguracoes> {
 
               const SizedBox(height: 24),
 
-              // Abas
               Container(
                 decoration: BoxDecoration(color: corFundoApp, borderRadius: BorderRadius.circular(10)),
                 child: Row(children: [
@@ -141,7 +137,6 @@ class _PaginaConfiguracoesState extends State<PaginaConfiguracoes> {
   }
 }
 
-// ── Aba ──────────────────────────────────────────────────────────────
 class _Aba extends StatelessWidget {
   final String label; final bool ativa; final VoidCallback onTap;
   const _Aba({required this.label, required this.ativa, required this.onTap});
@@ -169,7 +164,6 @@ class _Aba extends StatelessWidget {
   }
 }
 
-// ── Seção: Meus Dados ─────────────────────────────────────────────────
 class _SecaoDados extends StatelessWidget {
   final TextEditingController nomeCtrl, emailCtrl, telefoneCtrl;
   const _SecaoDados({required this.nomeCtrl, required this.emailCtrl, required this.telefoneCtrl});
@@ -186,7 +180,6 @@ class _SecaoDados extends StatelessWidget {
   );
 }
 
-// ── Seção: Segurança ──────────────────────────────────────────────────
 class _SecaoSeguranca extends StatelessWidget {
   final TextEditingController senhaCtrl, confirmaCtrl;
   const _SecaoSeguranca({required this.senhaCtrl, required this.confirmaCtrl});
@@ -203,9 +196,9 @@ class _SecaoSeguranca extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 9, 17, 131).withOpacity(0.06),
+          color: const Color.fromARGB(255, 9, 17, 131).withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color.fromARGB(255, 9, 17, 131).withOpacity(0.15)),
+          border: Border.all(color: const Color.fromARGB(255, 9, 17, 131).withValues(alpha: 0.15)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,7 +235,6 @@ class _DicaSenha extends StatelessWidget {
   );
 }
 
-// ── Seção: Notificações ───────────────────────────────────────────────
 class _SecaoNotificacoes extends StatelessWidget {
   final bool notifTrocas, notifEscalas, notifSistema;
   final void Function(int, bool) onChange;
@@ -309,7 +301,7 @@ class _ItemNotificacao extends StatelessWidget {
               Text(subtitulo, style: const TextStyle(fontSize: 12, color: Color(0xFF8A94C9))),
             ]),
           ),
-          Switch(value: valor, onChanged: onChanged, activeColor: cor),
+          Switch(value: valor, onChanged: onChanged, activeThumbColor: cor),
         ],
       ),
     );
