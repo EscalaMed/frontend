@@ -1,4 +1,3 @@
-// screens/home/pagina_funcionario.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -23,7 +22,7 @@ class _PaginaFuncionarioState extends State<PaginaFuncionario> {
   static const _cor = Color.fromARGB(255, 9, 17, 131);
   static const _vibrante = Color(0xFF3948F5);
   static const _fundo = Color(0xFFF4F6FA);
-  static const _baseUrl = 'http://10.0.2.2:5000'; // IP do Emulador
+  static const _baseUrl = 'http://10.0.2.2:5000';
 
   bool _carregando = true;
 
@@ -183,7 +182,6 @@ class _PaginaFuncionarioState extends State<PaginaFuncionario> {
           ]),
           const SizedBox(height: 24),
           
-          // Novo Card Dinâmico da sua Amiga
           Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),

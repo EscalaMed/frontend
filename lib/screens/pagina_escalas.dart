@@ -1,4 +1,3 @@
-// screens/pagina_escalas.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -11,7 +10,6 @@ class _Escala {
   final String funcionario;
   final String setor;
 
-  // 🌟 BLINDAGEM: tryParse evita que a tela quebre se o JSON vier com formato diferente
   _Escala.fromJson(Map<String, dynamic> j)
       : id = int.tryParse(j['id']?.toString() ?? '0') ?? 0,
         dataInicio = DateTime.tryParse(j['data_inicio']?.toString() ?? '') ?? DateTime.now(),
@@ -35,7 +33,7 @@ class _Escala {
 }
 
 class PaginaEscalas extends StatefulWidget {
-  final String token; // 🌟 SEGURANÇA: Agora exige o token
+  final String token;
 
   const PaginaEscalas({super.key, required this.token});
   @override
@@ -44,7 +42,7 @@ class PaginaEscalas extends StatefulWidget {
 
 class _PaginaEscalasState extends State<PaginaEscalas> {
   static const _cor = Color.fromARGB(255, 9, 17, 131);
-  static const _baseUrl = 'http://10.0.2.2:5000'; // IP para emulador Android
+  static const _baseUrl = 'http://10.0.2.2:5000';
 
   DateTime _mes = DateTime.now();
   DateTime? _diaSel;
@@ -69,7 +67,6 @@ class _PaginaEscalasState extends State<PaginaEscalas> {
       final uri = Uri.parse('$_baseUrl/api/escalas/mes')
           .replace(queryParameters: {'ano': '${_mes.year}', 'mes': '${_mes.month}'});
 
-      // 🌟 SEGURANÇA: Usa o token da página em vez de abrir o secure_storage
       final res = await http.get(uri, headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${widget.token}',
@@ -83,7 +80,7 @@ class _PaginaEscalasState extends State<PaginaEscalas> {
         
         for (final item in lista) {
           if (item is Map<String, dynamic>) {
-            try { // Protege cada escala individual
+            try {
               final escala = _Escala.fromJson(item);
               final chaveData = _ch(escala.dataInicio);
               mapaTemporario.putIfAbsent(chaveData, () => []).add(escala);

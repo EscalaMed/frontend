@@ -1,13 +1,12 @@
-// screens/home/adm.dart
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http; // Importante para buscar as trocas
+import 'package:http/http.dart' as http;
 import '../../components/card_destaque.dart';
 import '../../components/card_grid_menu.dart';
 import '../../components/etapas_cadastro/etapa3.dart';
 import 'grid/pagina_cadastro_funcionarios.dart';
 import 'grid/pagina_relatorios.dart';
-import '../pagina_calendario_gestao.dart'; // 🌟 Import atualizado pela sua amiga
+import '../pagina_calendario_gestao.dart';
 
 class HomeAdmin extends StatefulWidget {
   final String token;
@@ -26,7 +25,6 @@ class _HomeAdminState extends State<HomeAdmin> {
     _buscarQuantidadeTrocas();
   }
 
-  // ── Lógica Backend: Contagem para o Balão ──
   Future<void> _buscarQuantidadeTrocas() async {
     try {
       final uri = Uri.parse('http://10.0.2.2:5000/pedidos_troca/pendentes');
@@ -135,7 +133,6 @@ class _HomeAdminState extends State<HomeAdmin> {
                     CardGridMenu(
                       icone: Icons.calendar_month_outlined,
                       titulo: 'Escalas e\nTurnos',
-                      // 🌟 Nova rota integrada: aponta para a Gestão de Calendário passando o token
                       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PaginaCalendarioGestao(token: widget.token))),
                     ),
                     CardGridMenu(

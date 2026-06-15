@@ -1,11 +1,10 @@
-// components/cabecalho2.dart
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
 class Cabecalho2 extends StatelessWidget {
   final String titulo;
   final List<_Metrica> metricas;
-  final List<Widget>? extras; //
+  final List<Widget>? extras;
   final Widget? acaoDireita;
 
   const Cabecalho2({

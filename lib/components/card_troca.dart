@@ -1,4 +1,3 @@
-// components/card_troca.dart
 import 'package:flutter/material.dart';
 
 class CardTroca extends StatelessWidget {
@@ -49,7 +48,6 @@ class CardTroca extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Funcionário + badge de status
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -86,14 +84,12 @@ class CardTroca extends StatelessWidget {
           const Divider(height: 1, color: Color(0xFFE0E4F0)),
           const SizedBox(height: 12),
 
-          // Plantões com ícone de troca
           _LinhaPlantao(icone: Icons.calendar_today_outlined,    label: 'Meu plantão',     valor: meuPlantao),
           Center(child: Icon(Icons.swap_vert, size: 18, color: corAzulEscuro.withValues(alpha: 0.4))),
           _LinhaPlantao(icone: Icons.event_available_outlined,   label: 'Plantão desejado', valor: plantaoDesejado),
 
           const SizedBox(height: 12),
 
-          // Motivo
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -108,7 +104,6 @@ class CardTroca extends StatelessWidget {
             ],
           ),
 
-          // Botão cancelar — apenas pendentes
           if (status == 'Pendente' && aoCancelar != null) ...[
             const SizedBox(height: 12),
             SizedBox(
@@ -133,7 +128,6 @@ class CardTroca extends StatelessWidget {
   }
 }
 
-// Widget privado auxiliar — linha de plantão dentro do card
 class _LinhaPlantao extends StatelessWidget {
   final IconData icone;
   final String label;

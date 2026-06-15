@@ -1,5 +1,3 @@
-// screens/pagina_calendario_gestao.dart
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -8,7 +6,6 @@ import '../components/cabecalho2.dart';
 import 'home/grid/pagina_criar_plantao.dart';
 import 'home/grid/pagina_listar_trocas_pendentes.dart';
 
-// Modelo de plantão (BLINDADO)
 class _PlantaoItem {
   final int    id;
   final DateTime dataInicio;
@@ -58,7 +55,6 @@ class _PlantaoItem {
   }
 }
 
-// Widget principal 
 class PaginaCalendarioGestao extends StatefulWidget {
   final String? token;
   const PaginaCalendarioGestao({super.key, this.token});
@@ -70,7 +66,7 @@ class PaginaCalendarioGestao extends StatefulWidget {
 class _State extends State<PaginaCalendarioGestao> {
   static const _cor      = Color.fromARGB(255, 9, 17, 131);
   static const _ciano    = Color(0xFF00C9C8);
-  static const _baseUrl  = 'http://10.0.2.2:5000'; // IP para Emulador Android
+  static const _baseUrl  = 'http://10.0.2.2:5000';
 
   DateTime  _mes        = DateTime.now();
   DateTime? _diaSel;
@@ -82,7 +78,7 @@ class _State extends State<PaginaCalendarioGestao> {
 
   // Listas para o filtro
   List<String> _setores       = [];
-  List<String> _funcionarios  = []; // Resolvido: Agora é usado no modal
+  List<String> _funcionarios  = [];
 
   // Filtros ativos
   String? _filtroSetor;
@@ -174,7 +170,6 @@ class _State extends State<PaginaCalendarioGestao> {
     try {
       final h = await _headers;
       
-      // Resolvido: Aviso de null-aware ('use_null_aware_elements')
       final Map<String, dynamic> params = {
         'ano':'${dia.year}',
         'mes':'${dia.month}',
@@ -194,7 +189,6 @@ class _State extends State<PaginaCalendarioGestao> {
         final plantoesTemp = <_PlantaoItem>[];
         for (final j in lista) {
           if(j is Map<String, dynamic>) {
-            // Resolvido: Aviso empty_catches
             try { 
               plantoesTemp.add(_PlantaoItem.fromJson(j)); 
             } catch (e) {
@@ -282,7 +276,6 @@ class _State extends State<PaginaCalendarioGestao> {
           }).toList()),
           const SizedBox(height: 16),
 
-          // Resolvido: Filtro de Funcionários (Agora usamos a variável _funcionarios)
           if (_funcionarios.isNotEmpty) ...[
             _LabelFiltro('Funcionário'),
             const SizedBox(height: 8),
@@ -324,7 +317,6 @@ class _State extends State<PaginaCalendarioGestao> {
                   _filtroTurno       = turno;
                   _filtroStatus      = status;
                 });
-                // Resolvido: curly_braces_in_flow_control_structures
                 if (_diaSel != null) {
                   _carregarDia(_diaSel!);
                 } else {
@@ -351,7 +343,6 @@ class _State extends State<PaginaCalendarioGestao> {
       backgroundColor: Colors.white,
       body: SafeArea(child: Column(children: [
 
-        //Cabeçalho com calendário
         Cabecalho2(
           titulo: 'Calendário de Gestão',
           metricas: [
@@ -369,7 +360,6 @@ class _State extends State<PaginaCalendarioGestao> {
           extras: [
             const SizedBox(height: 12),
 
-            // Botões de ação rápida
             IntrinsicHeight(
               child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 _BotaoAcao(
@@ -394,7 +384,6 @@ class _State extends State<PaginaCalendarioGestao> {
                   icone: Icons.swap_horiz_outlined,
                   label: 'Trocas\nPendentes',
                   cor: _trocasPendentes > 0 ? const Color(0xFFF57F17) : _ciano.withValues(alpha: 0.7),
-                  // Resolvido: unnecessary_brace_in_string_interps
                   badge: _trocasPendentes > 0 ? _trocasPendentes.toString() : null,
                   onTap: () async {
                     await Navigator.push(context, MaterialPageRoute(builder: (_) => const PaginaListarTrocasPendentes()));
@@ -406,7 +395,6 @@ class _State extends State<PaginaCalendarioGestao> {
 
             const SizedBox(height: 16),
 
-            // Navegação de mês
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               IconButton(onPressed: () => _mudarMes(-1), icon: const Icon(Icons.chevron_left, color: Colors.white)),
               Text(_nomeMes(_mes), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white)),
@@ -423,7 +411,6 @@ class _State extends State<PaginaCalendarioGestao> {
                   ]))),
             ]),
 
-            // Cabeçalho dias da semana
             Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: ['DOM','SEG','TER','QUA','QUI','SEX','SÁB']
                   .map((d) => SizedBox(width: 38, child: Text(d, textAlign: TextAlign.center,
@@ -435,7 +422,6 @@ class _State extends State<PaginaCalendarioGestao> {
           ],
         ),
 
-        //Área inferior 
         Expanded(child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -486,7 +472,6 @@ class _State extends State<PaginaCalendarioGestao> {
     );
   }
 
-  //Grade do calendário
   List<Widget> _buildGrade() {
     final primeiro = DateTime(_mes.year, _mes.month, 1);
     final ultimo   = DateTime(_mes.year, _mes.month + 1, 0);
@@ -503,7 +488,6 @@ class _State extends State<PaginaCalendarioGestao> {
         final ehHoje = d.day==hoje.day && d.month==hoje.month && d.year==hoje.year;
         final tem    = _temPlantao(d);
 
-        // Conta trocas pendentes neste dia para destaque especial
         final temTroca = tem && (_plantoesMes[_chave(d)] ?? []).any((p) => p.status == 'solicitada_troca');
 
         celulas.add(GestureDetector(
@@ -518,7 +502,6 @@ class _State extends State<PaginaCalendarioGestao> {
               child: Text('$dia', style: TextStyle(fontSize: 13,
                   fontWeight: (sel||ehHoje||tem) ? FontWeight.bold : FontWeight.normal,
                   color: sel ? _cor : Colors.white))),
-            // Bolinha: laranja se tem troca pendente, ciano se tem plantão normal
             if (tem && !sel)
               Container(width: 4, height: 4,
                   decoration: BoxDecoration(color: temTroca ? const Color(0xFFF57F17) : _ciano, shape: BoxShape.circle)),
@@ -530,7 +513,6 @@ class _State extends State<PaginaCalendarioGestao> {
     return semanas;
   }
 
-  //Lista de plantões do dia
   Widget _buildListaDia() {
     if (_diaSel == null && !_temFiltroAtivo) {
       return _vazio(Icons.touch_app_outlined, 'Toque em um dia para ver os plantões\nou use o filtro para buscar');
@@ -539,7 +521,6 @@ class _State extends State<PaginaCalendarioGestao> {
     if (_plantoesDia.isEmpty) return _vazio(Icons.event_busy_outlined, 'Nenhum plantão encontrado');
     return ListView.separated(
       itemCount: _plantoesDia.length,
-      // Resolvido: unnecessary_underscores
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, i) => _CardPlantao(item: _plantoesDia[i]),
     );
@@ -552,7 +533,6 @@ class _State extends State<PaginaCalendarioGestao> {
     ]));
 }
 
-//Botão de ação no cabeçalho
 class _BotaoAcao extends StatelessWidget {
   final IconData icone;
   final String   label;
@@ -584,7 +564,6 @@ class _BotaoAcao extends StatelessWidget {
       ])));
 }
 
-//Label de seção no filtro 
 class _LabelFiltro extends StatelessWidget {
   final String texto;
   const _LabelFiltro(this.texto);
@@ -593,7 +572,6 @@ class _LabelFiltro extends StatelessWidget {
       style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color.fromARGB(255,9,17,131)));
 }
 
-//Chip de filtro
 class _ChipFiltro extends StatelessWidget {
   final String label; final bool selecionado; final VoidCallback onTap;
   const _ChipFiltro({required this.label, required this.selecionado, required this.onTap});
@@ -612,7 +590,6 @@ class _ChipFiltro extends StatelessWidget {
   }
 }
 
-//Card de plantão 
 class _CardPlantao extends StatelessWidget {
   final _PlantaoItem item;
   const _CardPlantao({required this.item});
@@ -656,13 +633,11 @@ class _CardPlantao extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0,2))]),
       child: Row(children: [
-        // Ícone de turno
         Container(width: 48, height: 48,
             decoration: BoxDecoration(color: _corTurno.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(_iconeTurno, color: _corTurno, size: 22)),
         const SizedBox(width: 12),
 
-        // Informações
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(item.funcionarioNome,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: azul)),
@@ -680,7 +655,6 @@ class _CardPlantao extends StatelessWidget {
           Text(item.funcao, style: TextStyle(fontSize: 11, color: azul.withValues(alpha: 0.4))),
         ])),
 
-        // Badge de status
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
           decoration: BoxDecoration(color: corS.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),

@@ -1,10 +1,9 @@
-// screens/home/pagina_coordenador.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../components/card_grid_menu.dart';
 import '../../components/etapas_cadastro/etapa3.dart';
-import '../pagina_calendario_gestao.dart'; // 🌟 Nova tela de gestão da sua amiga
+import '../pagina_calendario_gestao.dart';
 import '../pagina_configuracoes.dart';
 
 class PaginaCoordenador extends StatefulWidget {
@@ -23,7 +22,7 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
   static const _cor      = Color.fromARGB(255, 9, 17, 131);
   static const _vibrante = Color(0xFF3948F5);
   static const _fundo    = Color(0xFFF4F6FA);
-  static const _baseUrl  = 'http://10.0.2.2:5000'; // IP do Emulador Android
+  static const _baseUrl  = 'http://10.0.2.2:5000';
 
   bool _carregando = true;
   
@@ -38,7 +37,6 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
     _buscarTodosOsDados();
   }
 
-  // ── Lógica Backend: Busca dados do Coordenador ──
   Future<void> _buscarTodosOsDados() async {
     try {
       final String tokenJwt = widget.token;
@@ -82,9 +80,7 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
     }
   }
 
-  // ── Lógica Backend: Aceitar/Recusar Troca ──
   Future<void> _responderTroca(int index, int idTroca, bool aceitar) async {
-    // Atualização otimista na UI
     setState(() => _trocasPendentes.removeAt(index));
     
     try {
@@ -136,7 +132,6 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           
-          // Cabeçalho Dinâmico
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -169,7 +164,6 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
 
           const SizedBox(height: 24),
 
-          // Card do Setor Dinâmico
           Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -196,7 +190,6 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
 
           const SizedBox(height: 24),
 
-          // Seção de Trocas Dinâmica
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text('Trocas Pendentes (${_trocasPendentes.length})',
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _cor)),
@@ -238,7 +231,6 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
 
           const SizedBox(height: 24),
 
-          // Grid de Ações
           const Text('Ações Rápidas', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _cor)),
           const SizedBox(height: 16),
 
@@ -253,7 +245,6 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
               CardGridMenu(
                 icone: Icons.calendar_month_outlined,
                 titulo: 'Escalas e\nTurnos',
-                // 🌟 Atualizado pela sua amiga: Agora aponta para o calendário de gestão
                 onTap: () => _navegar(PaginaCalendarioGestao(token: widget.token)),
               ),
               CardGridMenu(
@@ -285,7 +276,6 @@ class _PaginaCoordenadorState extends State<PaginaCoordenador> {
   }
 }
 
-// Widgets Auxiliares
 class _Mini extends StatelessWidget {
   final String valor, label;
   const _Mini(this.valor, this.label);

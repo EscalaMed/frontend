@@ -1,11 +1,9 @@
-// screens/pagina_meu_calendario.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../components/cabecalho2.dart';
 import 'pagina_troca_plantao.dart';
 
-// ── Modelo de plantão vindo do back-end (100% Blindado) ───────
 class _PlantaoItem {
   final int id;
   final DateTime dataInicio;
@@ -22,14 +20,12 @@ class _PlantaoItem {
   });
 
   factory _PlantaoItem.fromJson(Map<String, dynamic> j) {
-    // Conversão de data ultra segura
     final dataIn = DateTime.tryParse(j['data_inicio']?.toString() ?? '') ?? DateTime.now();
     final dataOut = j['data_fim'] != null 
         ? DateTime.tryParse(j['data_fim'].toString()) ?? dataIn
         : dataIn;
 
     return _PlantaoItem(
-      // tryParse garante a leitura do ID seja qual for a chave que o backend mandar
       id:         int.tryParse(j['id']?.toString() ?? j['id_plantao']?.toString() ?? '0') ?? 0, 
       dataInicio: dataIn,
       dataFim:    dataOut,
@@ -67,7 +63,7 @@ class PaginaMeuCalendario extends StatefulWidget {
 
 class _State extends State<PaginaMeuCalendario> {
   static const _cor      = Color.fromARGB(255, 9, 17, 131);
-  static const _baseUrl  = 'http://10.0.2.2:5000'; // IP Local (Backend Integrado)
+  static const _baseUrl  = 'http://10.0.2.2:5000';
 
   DateTime  _mes      = DateTime.now();
   DateTime? _diaSel;
@@ -92,7 +88,6 @@ class _State extends State<PaginaMeuCalendario> {
     _carregarMes();
   }
 
-  // ── Integração: Carrega mês do back-end com proteção de falhas ──
   Future<void> _carregarMes() async {
     setState(() { _carregando = true; _plantoesMes = {}; _diaSel = null; _plantoesDia = []; });
     try {
@@ -125,7 +120,6 @@ class _State extends State<PaginaMeuCalendario> {
     }
   }
 
-  // ── Integração: Carrega dia do back-end com proteção de falhas ──
   Future<void> _carregarDia(DateTime dia) async {
     setState(() { _diaSel = dia; _plantoesDia = []; _carregando = true; });
     try {
@@ -197,7 +191,6 @@ class _State extends State<PaginaMeuCalendario> {
           extras: [
             const SizedBox(height: 12),
             
-            // ── UI Nova: Botões de Ação Atualizados ──
             Row(children: [
               _BotaoAcao(
                 icone: Icons.search,
@@ -270,7 +263,6 @@ class _State extends State<PaginaMeuCalendario> {
     );
   }
 
-  // ── UI Nova: Modal de Filtro ──
   void _abrirFiltroPesquisa(BuildContext context) {
     String? turnoSel;
     String? statusSel;
@@ -356,7 +348,6 @@ class _State extends State<PaginaMeuCalendario> {
     );
   }
 
-  // ── UI Nova: Lógica de Aplicação do Filtro ──
   void _aplicarFiltro(String? turno, String? status) {
     final statusMap = {
       'Agendado': 'agendado', 'Concluído': 'concluido',

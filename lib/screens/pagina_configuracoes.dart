@@ -1,4 +1,3 @@
-// screens/pagina_configuracoes.dart
 import 'package:flutter/material.dart';
 import '../components/campo_texto.dart';
 import '../components/botoes_navegacao.dart';
@@ -52,7 +51,6 @@ class _PaginaConfiguracoesState extends State<PaginaConfiguracoes> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Cabeçalho
               Row(
                 children: [
                   IconButton(
@@ -68,7 +66,6 @@ class _PaginaConfiguracoesState extends State<PaginaConfiguracoes> {
 
               const SizedBox(height: 24),
 
-              // Avatar
               Center(
                 child: Stack(
                   children: [
@@ -94,7 +91,6 @@ class _PaginaConfiguracoesState extends State<PaginaConfiguracoes> {
 
               const SizedBox(height: 24),
 
-              // Abas
               Container(
                 decoration: BoxDecoration(color: corFundoApp, borderRadius: BorderRadius.circular(10)),
                 child: Row(children: [
@@ -141,7 +137,6 @@ class _PaginaConfiguracoesState extends State<PaginaConfiguracoes> {
   }
 }
 
-// ── Aba ──────────────────────────────────────────────────────────────
 class _Aba extends StatelessWidget {
   final String label; final bool ativa; final VoidCallback onTap;
   const _Aba({required this.label, required this.ativa, required this.onTap});
@@ -169,7 +164,6 @@ class _Aba extends StatelessWidget {
   }
 }
 
-// ── Seção: Meus Dados ─────────────────────────────────────────────────
 class _SecaoDados extends StatelessWidget {
   final TextEditingController nomeCtrl, emailCtrl, telefoneCtrl;
   const _SecaoDados({required this.nomeCtrl, required this.emailCtrl, required this.telefoneCtrl});
@@ -186,7 +180,6 @@ class _SecaoDados extends StatelessWidget {
   );
 }
 
-// ── Seção: Segurança ──────────────────────────────────────────────────
 class _SecaoSeguranca extends StatelessWidget {
   final TextEditingController senhaCtrl, confirmaCtrl;
   const _SecaoSeguranca({required this.senhaCtrl, required this.confirmaCtrl});
@@ -242,7 +235,6 @@ class _DicaSenha extends StatelessWidget {
   );
 }
 
-// ── Seção: Notificações ───────────────────────────────────────────────
 class _SecaoNotificacoes extends StatelessWidget {
   final bool notifTrocas, notifEscalas, notifSistema;
   final void Function(int, bool) onChange;
