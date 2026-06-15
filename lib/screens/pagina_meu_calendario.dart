@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import '../components/cabecalho2.dart';
 import 'pagina_troca_plantao.dart';
 
-// ── Modelo de plantão vindo do back-end (Agora 100% Blindado) ───────
+// ── Modelo de plantão vindo do back-end (100% Blindado) ───────
 class _PlantaoItem {
   final int id;
   final DateTime dataInicio;
@@ -22,15 +22,15 @@ class _PlantaoItem {
   });
 
   factory _PlantaoItem.fromJson(Map<String, dynamic> j) {
-    // Conversão de data ultra segura (sem alterar o fuso horário que quebra os dias)
+    // Conversão de data ultra segura
     final dataIn = DateTime.tryParse(j['data_inicio']?.toString() ?? '') ?? DateTime.now();
     final dataOut = j['data_fim'] != null 
         ? DateTime.tryParse(j['data_fim'].toString()) ?? dataIn
         : dataIn;
 
     return _PlantaoItem(
-      // tryParse garante que não vai quebrar se o ID vier como String ou faltar
-      id:         int.tryParse(j['id']?.toString() ?? '0') ?? 0, 
+      // tryParse garante a leitura do ID seja qual for a chave que o backend mandar
+      id:         int.tryParse(j['id']?.toString() ?? j['id_plantao']?.toString() ?? '0') ?? 0, 
       dataInicio: dataIn,
       dataFim:    dataOut,
       funcao:     j['funcao']?.toString() ?? 'Plantão',
@@ -67,7 +67,7 @@ class PaginaMeuCalendario extends StatefulWidget {
 
 class _State extends State<PaginaMeuCalendario> {
   static const _cor      = Color.fromARGB(255, 9, 17, 131);
-  static const _baseUrl  = 'http://10.0.2.2:5000'; // IP Local
+  static const _baseUrl  = 'http://10.0.2.2:5000'; // IP Local (Backend Integrado)
 
   DateTime  _mes      = DateTime.now();
   DateTime? _diaSel;
@@ -92,6 +92,7 @@ class _State extends State<PaginaMeuCalendario> {
     _carregarMes();
   }
 
+  // ── Integração: Carrega mês do back-end com proteção de falhas ──
   Future<void> _carregarMes() async {
     setState(() { _carregando = true; _plantoesMes = {}; _diaSel = null; _plantoesDia = []; });
     try {
@@ -106,7 +107,7 @@ class _State extends State<PaginaMeuCalendario> {
         
         for (final j in lista) {
           if (j is Map<String, dynamic>) {
-            try { // Protege o loop: se 1 plantão estiver corrompido, carrega o resto!
+            try { 
               final item = _PlantaoItem.fromJson(j);
               final chave = _chave(item.dataInicio);
               mapa.putIfAbsent(chave, () => []).add(item);
@@ -124,6 +125,7 @@ class _State extends State<PaginaMeuCalendario> {
     }
   }
 
+  // ── Integração: Carrega dia do back-end com proteção de falhas ──
   Future<void> _carregarDia(DateTime dia) async {
     setState(() { _diaSel = dia; _plantoesDia = []; _carregando = true; });
     try {
@@ -194,29 +196,25 @@ class _State extends State<PaginaMeuCalendario> {
                   padding: EdgeInsets.zero, constraints: const BoxConstraints()),
           extras: [
             const SizedBox(height: 12),
+            
+            // ── UI Nova: Botões de Ação Atualizados ──
             Row(children: [
-              _BotaoAcao(
-                icone: Icons.add,
-                label: 'Agendar\nPlantão',
-                cor: const Color(0xFF00C9C8),
-                onTap: () {},
-              ),
-              const SizedBox(width: 10),
               _BotaoAcao(
                 icone: Icons.search,
                 label: 'Pesquisar\nPlantão',
                 cor: _cor,
-                onTap: () {},
+                onTap: () => _abrirFiltroPesquisa(context),
               ),
               const SizedBox(width: 10),
               _BotaoAcao(
                 icone: Icons.swap_horiz_outlined,
-                label: 'Confirmar\nTroca',
-                cor: const Color(0xFF00C9C8).withValues(alpha: 0.6),
+                label: 'Solicitar\nTroca',
+                cor: const Color(0xFF00C9C8),
                 onTap: () => Navigator.push(context,
                     MaterialPageRoute(builder: (_) => const PaginaTrocaPlantao())),
               ),
             ]),
+            
             const SizedBox(height: 16),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               IconButton(
@@ -261,7 +259,7 @@ class _State extends State<PaginaMeuCalendario> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(color: _cor.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(20)),
-                  child: Text('${_plantoesDia.length} plantão',
+                  child: Text('${_plantoesDia.length} plantão(ões)',
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _cor))),
             ]),
             const SizedBox(height: 12),
@@ -270,6 +268,121 @@ class _State extends State<PaginaMeuCalendario> {
         )),
       ])),
     );
+  }
+
+  // ── UI Nova: Modal de Filtro ──
+  void _abrirFiltroPesquisa(BuildContext context) {
+    String? turnoSel;
+    String? statusSel;
+
+    final turnos  = ['Manhã', 'Tarde', 'Noite'];
+    final statuses = ['Agendado', 'Concluído', 'Troca solicitada', 'Em aberto', 'Falta justificada', 'Falta injustificada'];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModal) => Padding(
+          padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              const Text('Filtrar Plantões',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 9, 17, 131))),
+              IconButton(onPressed: () => Navigator.pop(ctx),
+                  icon: const Icon(Icons.close, color: Color.fromARGB(255, 9, 17, 131))),
+            ]),
+            const SizedBox(height: 16),
+            const Text('Turno', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 9, 17, 131))),
+            const SizedBox(height: 8),
+            Wrap(spacing: 8, children: turnos.map((t) {
+              final sel = turnoSel == t;
+              return GestureDetector(
+                onTap: () => setModal(() => turnoSel = sel ? null : t),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: sel ? const Color.fromARGB(255, 9, 17, 131) : const Color(0xFFF4F6FA),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFB0B5D9), width: 1.2)),
+                  child: Text(t, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
+                      color: sel ? Colors.white : const Color.fromARGB(255, 9, 17, 131)))),
+              );
+            }).toList()),
+            const SizedBox(height: 16),
+            const Text('Status', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 9, 17, 131))),
+            const SizedBox(height: 8),
+            Wrap(spacing: 8, runSpacing: 8, children: statuses.map((s) {
+              final sel = statusSel == s;
+              return GestureDetector(
+                onTap: () => setModal(() => statusSel = sel ? null : s),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: sel ? const Color.fromARGB(255, 9, 17, 131) : const Color(0xFFF4F6FA),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFB0B5D9), width: 1.2)),
+                  child: Text(s, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
+                      color: sel ? Colors.white : const Color.fromARGB(255, 9, 17, 131)))),
+              );
+            }).toList()),
+            const SizedBox(height: 24),
+            Row(children: [
+              Expanded(child: SizedBox(height: 48,
+                child: OutlinedButton(
+                  onPressed: () { setModal(() { turnoSel = null; statusSel = null; }); },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color.fromARGB(255, 9, 17, 131),
+                    side: const BorderSide(color: Color.fromARGB(255, 9, 17, 131), width: 1.5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                  child: const Text('Limpar', style: TextStyle(fontWeight: FontWeight.bold))))),
+              const SizedBox(width: 12),
+              Expanded(child: SizedBox(height: 48,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _aplicarFiltro(turnoSel, statusSel);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 9, 17, 131),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                  child: const Text('Aplicar', style: TextStyle(fontWeight: FontWeight.bold))))),
+            ]),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  // ── UI Nova: Lógica de Aplicação do Filtro ──
+  void _aplicarFiltro(String? turno, String? status) {
+    final statusMap = {
+      'Agendado': 'agendado', 'Concluído': 'concluido',
+      'Troca solicitada': 'solicitada_troca', 'Em aberto': 'em_aberto',
+      'Falta justificada': 'falta_justificada', 'Falta injustificada': 'falta_injustificada',
+    };
+    final statusBackend = status != null ? statusMap[status] : null;
+
+    List<_PlantaoItem> todos = _diaSel != null
+        ? (_plantoesMes[_chave(_diaSel!)] ?? [])
+        : _plantoesMes.values.expand((l) => l).toList();
+
+    setState(() {
+      _plantoesDia = todos.where((p) {
+        final turnoOk  = turno == null || p.turno == turno;
+        final statusOk = statusBackend == null || p.status == statusBackend;
+        return turnoOk && statusOk;
+      }).toList();
+    });
+
+    if (_plantoesDia.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Nenhum plantão encontrado com esses filtros.'),
+        backgroundColor: Color.fromARGB(255, 9, 17, 131),
+        behavior: SnackBarBehavior.floating));
+    }
   }
 
   List<Widget> _buildGrade() {
@@ -299,17 +412,9 @@ class _State extends State<PaginaMeuCalendario> {
                 width: 34, height: 34,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: sel
-                      ? Colors.white
-                      : ehHoje
-                          ? Colors.white24
-                          : tem
-                              ? Colors.white.withValues(alpha: 0.15)
-                              : Colors.transparent,
+                  color: sel ? Colors.white : ehHoje ? Colors.white24 : tem ? Colors.white.withValues(alpha: 0.15) : Colors.transparent,
                   shape: BoxShape.circle,
-                  border: tem && !sel && !ehHoje
-                      ? Border.all(color: Colors.white54, width: 1.5)
-                      : null,
+                  border: tem && !sel && !ehHoje ? Border.all(color: Colors.white54, width: 1.5) : null,
                 ),
                 child: Text('$dia', style: TextStyle(
                   fontSize: 13,

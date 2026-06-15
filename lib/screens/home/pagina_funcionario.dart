@@ -109,7 +109,7 @@ class _PaginaFuncionarioState extends State<PaginaFuncionario> {
       final plantaoNoDia = plantoes.where((p) {
         final d = DateTime.parse(p['data_inicio']);
         return d.year == diaAtual.year && d.month == diaAtual.month && d.day == diaAtual.day;
-      }).firstOrNull; // O .firstOrNull previne erros se a lista for vazia
+      }).firstOrNull; 
 
       final diasSemanaStr = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
       final nomeDia = diasSemanaStr[diaAtual.weekday - 1];
@@ -144,7 +144,13 @@ class _PaginaFuncionarioState extends State<PaginaFuncionario> {
     if (dataIso == null) return '';
     final d = DateTime.parse(dataIso);
     final diasStr = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
-    return '${diasStr[d.weekday - 1]}, ${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')} – ${d.hour.toString().padLeft(2, '0')}h';
+    
+    // Calcula o turno
+    String turnoStr = 'Manhã';
+    if (d.hour >= 14 && d.hour < 22) turnoStr = 'Tarde';
+    if (d.hour >= 22 || d.hour < 6) turnoStr = 'Noite';
+
+    return '${diasStr[d.weekday - 1]} – $turnoStr (${d.hour.toString().padLeft(2, '0')}h)';
   }
 
   @override
@@ -176,6 +182,8 @@ class _PaginaFuncionarioState extends State<PaginaFuncionario> {
                     child: Icon(Icons.notifications_none_outlined, color: _cor, size: 28))),
           ]),
           const SizedBox(height: 24),
+          
+          // Novo Card Dinâmico da sua Amiga
           Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -197,14 +205,23 @@ class _PaginaFuncionarioState extends State<PaginaFuncionario> {
                         : 'Nenhum plantão agendado',
                     style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
-                if (_proximoPlantao != null)
-                  Row(children: [
-                    _Chip(icone: Icons.domain_outlined, texto: _proximoPlantao!['funcao'] ?? _setorDoBanco),
-                    const SizedBox(width: 16),
-                    const _Chip(icone: Icons.check_circle_outline, texto: 'Confirmado'),
-                  ]),
+                if (_proximoPlantao != null) ...[
+                  Builder(
+                    builder: (context) {
+                      final d = DateTime.parse(_proximoPlantao!['data_inicio']);
+                      return Row(children: [
+                        _Chip(icone: Icons.domain_outlined, texto: _proximoPlantao!['funcao'] ?? _setorDoBanco),
+                        const SizedBox(width: 16),
+                        _Chip(icone: Icons.access_time_outlined, texto: '${d.hour.toString().padLeft(2, '0')}h'),
+                        const SizedBox(width: 16),
+                        _Chip(icone: Icons.calendar_today_outlined, texto: '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}'),
+                      ]);
+                    }
+                  )
+                ]
               ])),
           const SizedBox(height: 24),
+
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             const Text('Esta Semana', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _cor)),
             GestureDetector(
@@ -213,10 +230,13 @@ class _PaginaFuncionarioState extends State<PaginaFuncionario> {
                     style: TextStyle(fontSize: 13, color: _vibrante, fontWeight: FontWeight.bold))),
           ]),
           const SizedBox(height: 12),
+
           ..._plantoesSemana.map((item) => Padding(padding: const EdgeInsets.only(bottom: 8), child: _CardDia(item: item))),
+
           const SizedBox(height: 24),
           const Text('Ações Rápidas', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _cor)),
           const SizedBox(height: 16),
+
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
